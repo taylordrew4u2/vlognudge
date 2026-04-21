@@ -6,6 +6,7 @@
 //  Communicates back to the main app via Darwin notifications + App Group.
 //
 
+import CoreFoundation
 import DeviceActivity
 import Foundation
 
