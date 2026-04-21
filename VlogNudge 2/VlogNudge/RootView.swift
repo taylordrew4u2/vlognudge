@@ -7,6 +7,7 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AppState.self) private var appState
+    @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab: Int = 0
 
     @AppStorage("hasCompletedOnboarding",
@@ -49,6 +50,31 @@ struct RootView: View {
         }
         .onOpenURL { url in
             handleURL(url)
+        }
+        .task {
+            drainPendingIntentActions()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                drainPendingIntentActions()
+            }
+        }
+    }
+
+    private func drainPendingIntentActions() {
+        let actions = AppIntentsInbox.drain()
+        guard !actions.isEmpty else { return }
+        for action in actions {
+            switch action {
+            case .record:
+                appState.requestCapture(prompt: nil)
+            case .idea:
+                appState.deepLink = .ideaMemo
+            case .notNow:
+                Task { await NudgeScheduler.shared.registerNotNow() }
+            case .skipHour:
+                Task { await NudgeScheduler.shared.skipNextHour() }
+            }
         }
     }
 
