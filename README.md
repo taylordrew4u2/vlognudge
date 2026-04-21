@@ -231,7 +231,41 @@ VlogNudgeDeviceActivityMonitor.swift — Screen Time event handler
 - **Crash on launch re: ModelContainer** → verify App Group ID matches exactly in capabilities *and* in `AppConstants.swift`
 - **Notifications don't show custom sound** → verify `NudgeSound.caf` is in the main app bundle and target membership is correct
 
-## 11. Next steps after shipping v1
+## 11. Source-control and debugger errors
+
+### "The source control operation failed because the revision X could not be found." / "The repository could not be found."
+
+These are Xcode-side errors — they mean Xcode's local working copy can't resolve a SHA or remote URL it has cached. The revision almost always does exist on GitHub; Xcode just hasn't fetched it, or its xcuserdata cache is pointing at a stale ref.
+
+Fix on your machine (not the repo):
+
+```bash
+cd <repo>
+git fetch origin
+git status                 # confirm branch + upstream
+git log -1 origin/main     # confirm main is at the expected SHA
+```
+
+Then in Xcode:
+
+1. **Source Control → Fetch Changes** (File menu) to re-pull refs.
+2. Quit Xcode fully.
+3. Delete Xcode's per-user state for this project: `rm -rf vlognudgee.xcodeproj/xcuserdata` — safe, it's gitignored.
+4. Clear DerivedData for this project: `rm -rf ~/Library/Developer/Xcode/DerivedData/vlognudgee-*`.
+5. Reopen `vlognudgee.xcodeproj`.
+
+If "The repository could not be found" persists, check `git remote -v` — the origin URL must be reachable (network, SSH key loaded in `ssh-agent`, GitHub auth in **Xcode → Settings → Accounts**). A renamed GitHub repo or a switched org account is a common cause.
+
+### "LLDB RPC Server has exited" (IDEDebugSessionErrorDomain code 28)
+
+This comes from the debugger, not source control, and usually means the app itself has gone away. Check in order:
+
+1. **Console.app → your device → filter on the process name** for a crash log. Code 28 often surfaces after the app hit `fatalError` or was killed by watchdog/jetsam.
+2. **Wireless debugging drop** — the iPhone log showed `device_isWireless = 1`. Tether via cable and retry. Wi-Fi debugging commonly disconnects over long runs.
+3. **Signing / provisioning mismatch** — `vlognudgee.xcodeproj` hard-codes `DEVELOPMENT_TEAM = R44WG942GS`. If that isn't your team, change it in **Signing & Capabilities**. Mismatches on App Groups / CloudKit / HealthKit entitlements often manifest as a silent launch failure that Xcode reports as the LLDB detach.
+4. **CloudKit container not linked to your team** — `SharedModelContainer.shared` uses `cloudKitDatabase: .private("iCloud.com.taylordrew.vlognudge")` and calls `fatalError` if the container can't initialize. Either enable the container for your team in the Developer portal, or temporarily swap `.private(…)` for `.none` while bootstrapping.
+
+## 12. Next steps after shipping v1
 
 The app is complete as a v1 but these are natural extensions:
 
