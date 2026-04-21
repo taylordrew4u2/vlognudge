@@ -1,37 +1,37 @@
 # VlogNudge — Xcode Setup Guide
 
-ADHD-aware iOS app for capturing day-in-the-life vlog clips, built to feed a CapCut editing workflow. This folder contains the full Swift source tree plus an XcodeGen spec that generates the Xcode project.
+ADHD-aware iOS app for capturing day-in-the-life vlog clips, built to feed a CapCut editing workflow.
 
 Stack: iOS 17.0 min · Swift 5.9 · SwiftUI · SwiftData + CloudKit · ActivityKit · WidgetKit · AppIntents
 
 ---
 
-## Quick start (recommended: XcodeGen)
-
-The repo ships with `project.yml`; XcodeGen reads it and produces `VlogNudge.xcodeproj` with all four targets, Info.plists, entitlements, and shared-file target memberships already wired.
+## Quick start
 
 ```bash
-# one-time install
-brew install xcodegen
-
-# from this directory
-xcodegen generate
-open VlogNudge.xcodeproj
+open vlognudgee.xcodeproj
 ```
 
-Then in Xcode:
+The main app target (`vlognudgee`) is wired up and ready to build. In Xcode:
 
-1. Select the `VlogNudge` target → Signing & Capabilities → set your **Team**.
-2. Repeat for each extension target (`VlogNudgeWidgets`, `VlogNudgeNotificationService`, `VlogNudgeDeviceActivity`).
-3. If your Apple Developer account has been granted **Family Controls**, add that capability on the main app and on `VlogNudgeDeviceActivity`. If not, leave it off and the Screen Time features will be gracefully disabled at runtime.
-4. Drop `NudgeSound.caf` into the main app bundle (see §6 below).
-5. Build and run on a real device.
+1. Signing & Capabilities → set your **Team**.
+2. Build and run on a real device (Live Activities, HealthKit, location, Focus all need one).
 
-`.xcodeproj` is git-ignored — regenerate with `xcodegen generate` after any source or `project.yml` change.
+The project uses Xcode's file-system synchronized folders, so every `.swift` file under `vlognudgee/` is compiled automatically — drop new files in the right folder and they're included.
 
----
+## Adding the extension targets
 
-## Manual setup (skip this if you used XcodeGen)
+The widget, notification-service, and device-activity sources live at the repo root but are not wired into the Xcode project yet. To add them:
+
+1. File → New → Target → **Widget Extension**, name it `VlogNudgeWidgets`, ✓ Include Live Activity. Point its source folder at `VlogNudgeWidgets/`. Add **App Groups** capability, same group ID.
+2. File → New → Target → **Notification Service Extension**, name it `VlogNudgeNotificationService`. Point it at `VlogNudgeNotificationService/`.
+3. (Optional, needs Family Controls entitlement) File → New → Target → **Device Activity Monitor Extension**, name it `VlogNudgeDeviceActivity`. Point it at `VlogNudgeDeviceActivity/`.
+4. Three files must be members of the widget target AND the main app target:
+   - `vlognudgee/Shared/AppConstants.swift`
+   - `vlognudgee/Services/LiveActivityAttributes.swift`
+   - `vlognudgee/Intents/AppIntents.swift`
+
+## Full manual-setup reference (historical — you don't need this)
 
 ### 1. Create the Xcode project
 
