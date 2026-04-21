@@ -19,18 +19,6 @@ The main app target (`vlognudgee`) is wired up and ready to build. In Xcode:
 
 The project uses Xcode's file-system synchronized folders, so every `.swift` file under `vlognudgee/` is compiled automatically — drop new files in the right folder and they're included.
 
-## Adding the extension targets
-
-The widget, notification-service, and device-activity sources live at the repo root but are not wired into the Xcode project yet. To add them:
-
-1. File → New → Target → **Widget Extension**, name it `VlogNudgeWidgets`, ✓ Include Live Activity. Point its source folder at `VlogNudgeWidgets/`. Add **App Groups** capability, same group ID.
-2. File → New → Target → **Notification Service Extension**, name it `VlogNudgeNotificationService`. Point it at `VlogNudgeNotificationService/`.
-3. (Optional, needs Family Controls entitlement) File → New → Target → **Device Activity Monitor Extension**, name it `VlogNudgeDeviceActivity`. Point it at `VlogNudgeDeviceActivity/`.
-4. Three files must be members of the widget target AND the main app target:
-   - `vlognudgee/Shared/AppConstants.swift`
-   - `vlognudgee/Services/LiveActivityAttributes.swift`
-   - `vlognudgee/Intents/AppIntents.swift`
-
 ## Full manual-setup reference (historical — you don't need this)
 
 ### 1. Create the Xcode project
@@ -171,7 +159,6 @@ Services/
 
 Intents/
 └── AppIntents.swift                — RecordClip, NotNow, SkipHour, CaptureIdea
-                                      (ALSO in widget target)
 
 Features/
 ├── Today/TodayView.swift           — home screen
@@ -185,33 +172,7 @@ Features/
 └── Onboarding/OnboardingFlow.swift
 ```
 
-### Widget extension (`VlogNudgeWidgets/`)
-
-```
-VlogNudgeWidgetsBundle.swift        — registers all widgets
-LockScreenWidget/
-└── LockScreenWidget.swift          — rectangular, circular, inline
-HomeScreenWidget/
-└── HomeScreenWidget.swift          — small, medium, large (interactive)
-StandByWidget/
-└── StandByWidget.swift             — big glanceable for docked phone
-LiveActivity/
-└── VlogNudgeLiveActivity.swift     — Lock Screen + Dynamic Island
-```
-
-### Notification Service Extension (`VlogNudgeNotificationService/`)
-
-```
-NotificationService.swift           — enriches delivered notifications
-                                      with "Last clip Xm ago" +
-                                      "Nudged: [reason]"
-```
-
-### Device Activity Extension (`VlogNudgeDeviceActivity/`)
-
-```
-VlogNudgeDeviceActivityMonitor.swift — Screen Time event handler
-```
+> Extension targets (widgets, notification service, device activity) are not committed. When you're ready to add them, create the targets in Xcode and point them at fresh folders under the project directory — the earlier scaffold was removed to keep the repo to just what the `vlognudgee` target actually compiles.
 
 ## 9. Known gotchas
 
@@ -225,11 +186,9 @@ VlogNudgeDeviceActivityMonitor.swift — Screen Time event handler
 
 ## 10. Quick fixes if something doesn't compile
 
-- **"Cannot find AppConstants in scope"** in widget → add `AppConstants.swift` to widget target membership
-- **"Cannot find VlogNudgeActivityAttributes in scope"** in widget → same, add `LiveActivityAttributes.swift` to widget target
-- **"Cannot find RecordClipIntent in scope"** in widget → add `AppIntents.swift` to widget target
 - **Crash on launch re: ModelContainer** → verify App Group ID matches exactly in capabilities *and* in `AppConstants.swift`
 - **Notifications don't show custom sound** → verify `NudgeSound.caf` is in the main app bundle and target membership is correct
+- **Widget / notification-service / device-activity builds fail** → the repo no longer ships scaffolding for those targets. Add each extension via **File → New → Target** and include `AppConstants.swift` (all extensions), `LiveActivityAttributes.swift` (widget), and `AppIntents.swift` (widget) via target membership.
 
 ## 11. Source-control and debugger errors
 
