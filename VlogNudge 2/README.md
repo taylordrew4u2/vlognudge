@@ -1,12 +1,39 @@
 # VlogNudge — Xcode Setup Guide
 
-ADHD-aware iOS app for capturing day-in-the-life vlog clips, built to feed a CapCut editing workflow. This folder contains the full Swift source tree for a fresh Xcode project.
+ADHD-aware iOS app for capturing day-in-the-life vlog clips, built to feed a CapCut editing workflow. This folder contains the full Swift source tree plus an XcodeGen spec that generates the Xcode project.
 
 Stack: iOS 17.0 min · Swift 5.9 · SwiftUI · SwiftData + CloudKit · ActivityKit · WidgetKit · AppIntents
 
 ---
 
-## 1. Create the Xcode project
+## Quick start (recommended: XcodeGen)
+
+The repo ships with `project.yml`; XcodeGen reads it and produces `VlogNudge.xcodeproj` with all four targets, Info.plists, entitlements, and shared-file target memberships already wired.
+
+```bash
+# one-time install
+brew install xcodegen
+
+# from this directory
+xcodegen generate
+open VlogNudge.xcodeproj
+```
+
+Then in Xcode:
+
+1. Select the `VlogNudge` target → Signing & Capabilities → set your **Team**.
+2. Repeat for each extension target (`VlogNudgeWidgets`, `VlogNudgeNotificationService`, `VlogNudgeDeviceActivity`).
+3. If your Apple Developer account has been granted **Family Controls**, add that capability on the main app and on `VlogNudgeDeviceActivity`. If not, leave it off and the Screen Time features will be gracefully disabled at runtime.
+4. Drop `NudgeSound.caf` into the main app bundle (see §6 below).
+5. Build and run on a real device.
+
+`.xcodeproj` is git-ignored — regenerate with `xcodegen generate` after any source or `project.yml` change.
+
+---
+
+## Manual setup (skip this if you used XcodeGen)
+
+### 1. Create the Xcode project
 
 1. Xcode → File → New → Project → **iOS → App**
 2. Settings:
