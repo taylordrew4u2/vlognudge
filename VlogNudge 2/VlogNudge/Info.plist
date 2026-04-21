@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>VlogNudge</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>AccentColor</string>
+	</dict>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>We use your camera to film vlog clips.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We record audio with your vlog clips.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Clips save to a Daily Vlogs album.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We look up clips you've saved so the app can show them in the timeline.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>So we avoid nudging while driving and detect when you arrive somewhere.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>For location-based nudges like "just got home."</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>So we can trigger nudges when you arrive at places even if the app is backgrounded.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>We skip nudges during your events and nudge right after they end.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Same — reads upcoming and just-ended events.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Post-workout is a great vlog moment.</string>
+	<key>NSFocusStatusUsageDescription</key>
+	<string>So we don't interrupt you in Sleep or Do Not Disturb.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.taylordrew.vlognudge.refresh</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.taylordrew.vlognudge</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>vlognudge</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+</dict>
+</plist>
