@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VlogNudge — Widget Surfaces</title>
+<style>
+  :root {
+    /* surfaces */
+    --bg: #0A0A0A;
+    --bg-elev: #141414;
+    --bg-elev-2: #1C1C1E;
+    --hairline: rgba(255,255,255,0.08);
+    --hairline-strong: rgba(255,255,255,0.14);
+
+    /* text */
+    --text: #F2F2F2;
+    --text-dim: rgba(242,242,242,0.62);
+    --text-faint: rgba(242,242,242,0.38);
+    --text-mute: rgba(242,242,242,0.22);
+
+    /* brand / action */
+    --record: #E53935;
+    --record-soft: rgba(229,57,53,0.14);
+
+    /* pace (muted, non-saturated) */
+    --pace-green:  #6E8F6A;
+    --pace-yellow: #C7A45A;
+    --pace-orange: #C98A5A;
+
+    /* fonts */
+    --font-rounded: "SF Pro Rounded", ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-rounded);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+  * { box-sizing: border-box; }
+
+  /* Canvas typography — quiet, not hand-drawn */
+  .t-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-weight: 500;
+  }
+  .t-title    { font-family: var(--font-rounded); font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+  .t-body     { font-family: var(--font-rounded); font-weight: 400; color: var(--text-dim); line-height: 1.5; }
+  .t-caption  { font-family: var(--font-rounded); font-weight: 500; font-size: 12px; color: var(--text-faint); }
+  .t-num      { font-family: var(--font-rounded); font-weight: 800; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; }
+
+  /* segmented pill control */
+  .pill {
+    display: inline-flex;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .pill button {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font: 500 12px/1 var(--font-rounded);
+    cursor: pointer;
+    letter-spacing: 0.01em;
+  }
+  .pill button.active {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+  }
+  .pill button:hover:not(.active) { color: var(--text); }
+
+  /* Glass card surface inside canvas */
+  .surface {
+    background: var(--bg-elev);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+  }
+  .surface-2 {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+  }
+
+  /* phone frame */
+  .phone { width: 300px; border: 2px solid #000; border-radius: 46px; padding: 6px; background: #000; box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px var(--hairline); }
+  .phone-screen { border-radius: 40px; overflow: hidden; position: relative; width: 100%; aspect-ratio: 9/19.5; }
+
+  /* selection highlight ring */
+  .select-ring-active { box-shadow: 0 0 0 1.5px var(--record); }
+
+  /* pace dots */
+  .dot { display: inline-block; border-radius: 50%; }
+
+  /* no-emoji ban is enforced visually */
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx" data-plugins="transform-react-jsx-source" data-filename="design-canvas.jsx"></script>
+<script type="text/babel" src="src/primitives.jsx" data-plugins="transform-react-jsx-source" data-filename="src/primitives.jsx"></script>
+<script type="text/babel" src="src/icons.jsx" data-plugins="transform-react-jsx-source" data-filename="src/icons.jsx"></script>
+<script type="text/babel" src="src/lockscreen.jsx" data-plugins="transform-react-jsx-source" data-filename="src/lockscreen.jsx"></script>
+<script type="text/babel" src="src/homescreen.jsx" data-plugins="transform-react-jsx-source" data-filename="src/homescreen.jsx"></script>
+<script type="text/babel" src="src/standby.jsx" data-plugins="transform-react-jsx-source" data-filename="src/standby.jsx"></script>
+<script type="text/babel" src="src/liveactivity.jsx" data-plugins="transform-react-jsx-source" data-filename="src/liveactivity.jsx"></script>
+<script type="text/babel" src="src/app.jsx" data-plugins="transform-react-jsx-source" data-filename="src/app.jsx"></script>
+
+</body>
+</html>
