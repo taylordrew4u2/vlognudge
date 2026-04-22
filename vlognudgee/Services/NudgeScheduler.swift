@@ -285,6 +285,17 @@ final class NudgeScheduler {
 
     static let bgTaskIdentifier = "com.taylordrew.vlognudge.refresh"
 
+    func registerBackgroundRefreshTask() {
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.bgTaskIdentifier, using: nil) { task in
+            guard let refreshTask = task as? BGAppRefreshTask else {
+                task.setTaskCompleted(success: false)
+                return
+            }
+
+            self.handleBackgroundRefresh(task: refreshTask)
+        }
+    }
+
     func scheduleBackgroundRefresh() {
         let request = BGAppRefreshTaskRequest(identifier: Self.bgTaskIdentifier)
         // Fire tomorrow at window-open time
@@ -304,6 +315,20 @@ final class NudgeScheduler {
     }
 
     // MARK: - Private helpers
+
+    private func handleBackgroundRefresh(task: BGAppRefreshTask) {
+        scheduleBackgroundRefresh()
+
+        task.expirationHandler = {
+            task.setTaskCompleted(success: false)
+        }
+
+        Task { @MainActor in
+            let context = SharedModelContainer.backgroundContext()
+            await ensureTodayIsScheduled(context: context)
+            task.setTaskCompleted(success: true)
+        }
+    }
 
     private func fetchOrCreateSettings(context: ModelContext) -> UserSettings? {
         let descriptor = FetchDescriptor<UserSettings>()

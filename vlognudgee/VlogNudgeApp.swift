@@ -15,6 +15,7 @@ struct VlogNudgeApp: App {
     init() {
         // Wire up notification delegate on launch
         UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
+        NudgeScheduler.shared.registerBackgroundRefreshTask()
     }
 
     var body: some Scene {

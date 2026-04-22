@@ -265,6 +265,8 @@ struct OnboardingFlow: View {
     }
 
     private func requestMotion() async {
+        guard CMMotionActivityManager.isActivityAvailable() else { return }
+
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             let manager = CMMotionActivityManager()
             manager.queryActivityStarting(from: Date().addingTimeInterval(-60),
