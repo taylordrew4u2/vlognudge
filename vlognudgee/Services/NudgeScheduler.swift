@@ -180,7 +180,6 @@ final class NudgeScheduler {
         defaults?.set(settings.frequency.baselineCountPerDay, forKey: "targetToday")
 
         // Cancel any pending nudges in the near future (next hour)
-        let pushUntil = Date().addingTimeInterval(60 * 60)
         await NotificationService.shared.cancelNudges(after: Date())
 
         // Recompute and reschedule remaining baseline nudges for today

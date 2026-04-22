@@ -170,7 +170,7 @@ struct IdeaRecorderView: View {
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playAndRecord, mode: .default)
         try? session.setActive(true)
-        session.requestRecordPermission { _ in }
+        AVAudioApplication.requestRecordPermission { _ in }
     }
 
     private func toggleRecording() {

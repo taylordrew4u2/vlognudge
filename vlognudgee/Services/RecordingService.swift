@@ -12,7 +12,7 @@ import Observation
 import UIKit
 
 @Observable
-final class RecordingService: NSObject {
+final class RecordingService: NSObject, @unchecked Sendable {
     static let shared = RecordingService()
 
     // Published state
