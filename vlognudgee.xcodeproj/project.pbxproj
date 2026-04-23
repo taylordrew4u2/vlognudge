@@ -9,9 +9,7 @@
 /* Begin PBXBuildFile section */
 		BA4339672F9854F900185CA3 /* vlogExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BA4339512F9854F700185CA3 /* vlogExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BA43396D2F98550400185CA3 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA4339552F9854F700185CA3 /* SwiftUI.framework */; };
-		BA43396E2F98550400185CA3 /* SwiftUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BA4339552F9854F700185CA3 /* SwiftUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		BA4339702F98550600185CA3 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA4339532F9854F700185CA3 /* WidgetKit.framework */; };
-		BA4339712F98550600185CA3 /* WidgetKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BA4339532F9854F700185CA3 /* WidgetKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,18 +32,6 @@
 				BA4339672F9854F900185CA3 /* vlogExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BA43396F2F98550400185CA3 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				BA43396E2F98550400185CA3 /* SwiftUI.framework in Embed Frameworks */,
-				BA4339712F98550600185CA3 /* WidgetKit.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -153,7 +139,6 @@
 				BA43394D2F9854F700185CA3 /* Sources */,
 				BA43394E2F9854F700185CA3 /* Frameworks */,
 				BA43394F2F9854F700185CA3 /* Resources */,
-				BA43396F2F98550400185CA3 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

@@ -19,12 +19,15 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>VlogNudge does not save data to Health.</string>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>location</string>
 		<string>fetch</string>
 		<string>processing</string>
 		<string>remote-notification</string>
 	</array>
+	<key>CFBundleVersion</key>
+	<string>1</string>
 </dict>
 </plist>
