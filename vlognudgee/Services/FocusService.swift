@@ -11,7 +11,7 @@ import Observation
 final class FocusService {
     static let shared = FocusService()
 
-    private(set) var isInBlockingFocus: Bool = false
+    private var isInBlockingFocus: Bool = false
 
     private init() {}
 

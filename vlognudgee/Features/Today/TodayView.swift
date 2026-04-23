@@ -2,6 +2,8 @@
 //  TodayView.swift
 //  VlogNudge
 //
+//  6:3:1 — Dominant bg, Secondary cards, Accent progress & CTAs.
+//
 
 import SwiftUI
 import SwiftData
@@ -28,14 +30,18 @@ struct TodayView: View {
 
     private var target: Int {
         settings.frequency.baselineCountPerDay == 0
-            ? 8  // show something reasonable in context-only mode
+            ? 8
             : settings.frequency.baselineCountPerDay
+    }
+
+    private var progressFraction: Double {
+        Double(todayClips.count) / Double(max(1, target))
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: VNSpacing.xxl) {
                     nextNudgeCard
                     progressCard
                     clipsStrip
@@ -43,9 +49,11 @@ struct TodayView: View {
                     ideaButton
                     lastClipFooter
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 40)
+                .padding(.horizontal, VNSpacing.lg)
+                .padding(.top, VNSpacing.sm)
+                .padding(.bottom, VNSpacing.huge)
             }
+            .background(VNColor.dominant)
             .navigationTitle("Today")
             .refreshable {
                 await refresh()
@@ -56,69 +64,76 @@ struct TodayView: View {
         }
     }
 
-    // MARK: - Cards
+    // MARK: - Next Nudge Card
 
     private var nextNudgeCard: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: VNSpacing.sm) {
             Text("Next nudge")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(VNFont.caption)
+                .foregroundStyle(VNColor.textTertiary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if settings.frequency == .contextOnly {
                 Text("Whenever something happens")
-                    .font(.title2.bold())
+                    .font(VNFont.title2)
+                    .foregroundStyle(VNColor.textPrimary)
             } else if let next = nextNudgeDate {
                 Text(next, style: .time)
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .font(VNFont.bigTime)
+                    .foregroundStyle(VNColor.accent)
                     .contentTransition(.numericText())
                 Text(relativeText(for: next))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(VNFont.callout)
+                    .foregroundStyle(VNColor.textSecondary)
             } else {
                 Text("—")
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .font(VNFont.bigTime)
+                    .foregroundStyle(VNColor.textTertiary)
                 Text("No more nudges scheduled today")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(VNFont.callout)
+                    .foregroundStyle(VNColor.textSecondary)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .vnCard()
     }
 
+    // MARK: - Progress Card (capsule bar)
+
     private var progressCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: VNSpacing.md) {
             HStack {
                 Text("\(todayClips.count) of \(target) clips")
-                    .font(.headline)
+                    .font(VNFont.headline)
+                    .foregroundStyle(VNColor.textPrimary)
                 Spacer()
-                Text("\(Int(Double(todayClips.count) / Double(max(1, target)) * 100))%")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Text("\(Int(progressFraction * 100))%")
+                    .font(VNFont.subheadline)
+                    .foregroundStyle(VNColor.accent)
             }
 
             HStack(spacing: 6) {
                 ForEach(0..<target, id: \.self) { index in
                     Capsule()
-                        .fill(index < todayClips.count ? Color.accentColor : Color.secondary.opacity(0.2))
+                        .fill(index < todayClips.count ? VNColor.accent : VNColor.textTertiary.opacity(0.2))
                         .frame(height: 8)
+                        .animation(.easeInOut(duration: 0.3).delay(Double(index) * 0.05), value: todayClips.count)
                 }
             }
         }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .vnCard()
     }
 
+    // MARK: - Today's Clips Strip
+
     private var clipsStrip: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: VNSpacing.sm) {
             if !todayClips.isEmpty {
                 Text("Today's clips")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(VNFont.caption)
+                    .foregroundStyle(VNColor.textTertiary)
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
+                    HStack(spacing: VNSpacing.md) {
                         ForEach(todayClips) { clip in
                             ClipThumb(clip: clip)
                         }
@@ -128,47 +143,55 @@ struct TodayView: View {
         }
     }
 
+    // MARK: - Record Button (accent CTA)
+
     private var recordButton: some View {
         Button {
             appState.requestCapture(prompt: nil)
         } label: {
-            HStack {
+            HStack(spacing: VNSpacing.sm) {
                 Image(systemName: "video.circle.fill")
                     .font(.title2)
                 Text("Record now")
-                    .font(.title3.bold())
+                    .font(VNFont.title3)
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(VNColor.dominant)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 18)
-            .background(Color.red, in: RoundedRectangle(cornerRadius: 16))
+            .padding(.vertical, VNSpacing.xl)
+            .background(VNColor.accent, in: RoundedRectangle(cornerRadius: VNRadius.lg))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("Record a clip now")
     }
+
+    // MARK: - Capture Idea Button
 
     private var ideaButton: some View {
         Button {
             appState.deepLink = .ideaMemo
         } label: {
-            HStack {
+            HStack(spacing: VNSpacing.sm) {
                 Image(systemName: "lightbulb.fill")
+                    .foregroundStyle(VNColor.accent)
                 Text("Capture idea")
+                    .font(VNFont.subheadline)
+                    .foregroundStyle(VNColor.textPrimary)
             }
-            .font(.subheadline.bold())
-            .foregroundStyle(.primary)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .padding(.vertical, VNSpacing.lg)
+            .background(VNColor.secondary, in: RoundedRectangle(cornerRadius: VNRadius.md))
         }
         .buttonStyle(.plain)
     }
+
+    // MARK: - Last Clip Footer
 
     @ViewBuilder
     private var lastClipFooter: some View {
         if let last = todayClips.first {
             Text("Last clip: \(last.recordedAt, style: .time) · \(DateHelpers.minutesAgo(from: last.recordedAt))m ago")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(VNFont.caption)
+                .foregroundStyle(VNColor.textTertiary)
         }
     }
 
@@ -188,7 +211,6 @@ struct TodayView: View {
     }
 
     private func refresh() async {
-        // Ask scheduler for next pending, stash in app group for widget
         let center = UNUserNotificationCenter.current()
         let pending = await center.pendingNotificationRequests()
 
@@ -201,7 +223,6 @@ struct TodayView: View {
 
         nextNudgeDate = vlogNudges.first
 
-        // Share to widget via App Group
         let defaults = UserDefaults(suiteName: AppConstants.appGroupID)
         defaults?.set(todayClips.count, forKey: "clipsToday")
         defaults?.set(target, forKey: "targetToday")
@@ -213,34 +234,35 @@ struct TodayView: View {
     }
 }
 
-// MARK: - Thumb
+// MARK: - Clip Thumbnail (themed)
 
 struct ClipThumb: View {
     let clip: Clip
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.secondary.opacity(0.2))
+        VStack(alignment: .leading, spacing: VNSpacing.xs) {
+            RoundedRectangle(cornerRadius: VNRadius.md)
+                .fill(VNColor.secondaryLight)
                 .frame(width: 100, height: 140)
                 .overlay(
                     Image(systemName: "video.fill")
                         .font(.title)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(VNColor.textTertiary)
                 )
                 .overlay(alignment: .topTrailing) {
                     if clip.starred {
                         Image(systemName: "star.fill")
                             .font(.caption)
-                            .foregroundStyle(.yellow)
-                            .padding(4)
+                            .foregroundStyle(VNColor.warning)
+                            .padding(VNSpacing.xs)
                     }
                 }
             Text(clip.recordedAt, style: .time)
-                .font(.caption2.bold())
+                .font(VNFont.caption)
+                .foregroundStyle(VNColor.textPrimary)
             Text("\(Int(clip.duration))s")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .font(VNFont.caption2)
+                .foregroundStyle(VNColor.textTertiary)
         }
     }
 }

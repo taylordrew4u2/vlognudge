@@ -22,6 +22,19 @@ struct VlogNudgeApp: App {
         WindowGroup {
             RootView()
                 .environment(appState)
+                .onOpenURL { url in
+                    guard url.scheme == "vlognudge" else { return }
+                    switch url.host {
+                    case "record":
+                        appState.requestCapture(prompt: nil)
+                    case "idea":
+                        appState.deepLink = .ideaMemo
+                    case "timeline":
+                        appState.deepLink = .timeline(date: .now)
+                    default:
+                        break
+                    }
+                }
                 .task {
                     // Register categories on every launch (safe to call repeatedly)
                     NotificationService.shared.registerCategories()
@@ -44,6 +57,20 @@ struct VlogNudgeApp: App {
                     let fences = (try? modelContainer.mainContext.fetch(
                         FetchDescriptor<Geofence>())) ?? []
                     LocationService.shared.refreshGeofences(from: fences, near: nil)
+
+                    // Seed default album if none exist
+                    let albumCount = (try? modelContainer.mainContext.fetchCount(
+                        FetchDescriptor<VlogAlbum>())) ?? 0
+                    if albumCount == 0 {
+                        let defaultAlbum = VlogAlbum(
+                            name: AppConstants.photosAlbumName,
+                            systemIcon: "video.fill",
+                            colorHex: "FF3B30",
+                            isDefault: true
+                        )
+                        modelContainer.mainContext.insert(defaultAlbum)
+                        try? modelContainer.mainContext.save()
+                    }
                 }
         }
         .modelContainer(modelContainer)

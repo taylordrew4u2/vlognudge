@@ -20,17 +20,20 @@ final class Clip {
     var starred: Bool = false
     var dayKey: String = ""
     var capturedContextJSON: String?
+    var albumName: String = "Daily Vlogs"
 
     init(recordedAt: Date = Date(),
          duration: TimeInterval,
          photosAssetID: String,
          topicPrompt: String? = nil,
+         albumName: String = AppConstants.photosAlbumName,
          capturedContext: ContextSnapshot? = nil) {
         self.id = UUID()
         self.recordedAt = recordedAt
         self.duration = duration
         self.photosAssetID = photosAssetID
         self.topicPrompt = topicPrompt
+        self.albumName = albumName
         self.starred = false
         self.dayKey = DateHelpers.dayKey(from: recordedAt)
         if let context = capturedContext,
@@ -38,6 +41,31 @@ final class Clip {
            let json = String(data: data, encoding: .utf8) {
             self.capturedContextJSON = json
         }
+    }
+}
+
+// MARK: - VlogAlbum
+
+@Model
+final class VlogAlbum {
+    var id: UUID = UUID()
+    var name: String = ""
+    var systemIcon: String = "film.stack"
+    var colorHex: String = "007AFF"
+    var createdAt: Date = Date()
+    var sortOrder: Int = 0
+    var isDefault: Bool = false
+
+    init(name: String,
+         systemIcon: String = "film.stack",
+         colorHex: String = "007AFF",
+         isDefault: Bool = false) {
+        self.id = UUID()
+        self.name = name
+        self.systemIcon = systemIcon
+        self.colorHex = colorHex
+        self.createdAt = Date()
+        self.isDefault = isDefault
     }
 }
 
@@ -179,9 +207,7 @@ final class UserSettings {
     var useLocation: Bool = true
     var useCalendar: Bool = true
     var useHealth: Bool = true
-    var useWeather: Bool = true
     var useFocus: Bool = true
-    var useScreenTime: Bool = true
 
     // Capture
     var orientationLockRaw: String = OrientationLock.vertical.rawValue
@@ -223,12 +249,10 @@ struct ContextSnapshot: Codable {
     var currentGeofenceID: String?
     var lastGeofenceTransition: String?
     var minutesSinceLastClip: Int?
-    var unlocksInLast10Min: Int?
     var upcomingEventInMinutes: Int?
     var lastEventEndedMinutesAgo: Int?
     var inFocusMode: Bool = false
     var isCharging: Bool = false
     var isOnCall: Bool = false
-    var weatherCondition: String?
     var phoneActiveDevice: Bool = true
 }

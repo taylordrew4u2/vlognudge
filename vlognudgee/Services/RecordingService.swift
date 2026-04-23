@@ -16,9 +16,8 @@ final class RecordingService: NSObject, @unchecked Sendable {
     static let shared = RecordingService()
 
     // Published state
-    var isSessionRunning = false
+    private var isSessionRunning = false
     var isRecording = false
-    var errorMessage: String?
 
     // AVCapture components
     private(set) var captureSession = AVCaptureSession()
@@ -40,7 +39,7 @@ final class RecordingService: NSObject, @unchecked Sendable {
 
     // Front or back camera
     enum CameraPosition { case front, back }
-    private(set) var currentPosition: CameraPosition = .back
+    private var currentPosition: CameraPosition = .back
 
     override init() {
         super.init()
@@ -83,9 +82,7 @@ final class RecordingService: NSObject, @unchecked Sendable {
                     videoDeviceInput = input
                 }
             } catch {
-                DispatchQueue.main.async {
-                    self.errorMessage = "Video device setup failed: \(error.localizedDescription)"
-                }
+                print("Video device setup failed: \(error.localizedDescription)")
             }
         }
 
@@ -98,9 +95,7 @@ final class RecordingService: NSObject, @unchecked Sendable {
                     audioDeviceInput = input
                 }
             } catch {
-                DispatchQueue.main.async {
-                    self.errorMessage = "Audio device setup failed: \(error.localizedDescription)"
-                }
+                print("Audio device setup failed: \(error.localizedDescription)")
             }
         }
 

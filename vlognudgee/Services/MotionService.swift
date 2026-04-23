@@ -18,7 +18,7 @@ final class MotionService {
 
     private let manager = CMMotionActivityManager()
     private(set) var current: Activity = .unknown
-    private(set) var lastTransitionAt: Date?
+    private var lastTransitionAt: Date?
 
     var isAvailable: Bool { CMMotionActivityManager.isActivityAvailable() }
 

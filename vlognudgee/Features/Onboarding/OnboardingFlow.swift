@@ -19,7 +19,7 @@ struct OnboardingFlow: View {
     @AppStorage("hasCompletedOnboarding", store: UserDefaults(suiteName: AppConstants.appGroupID))
     private var hasCompletedOnboarding: Bool = false
 
-    private let steps = 11
+    private let steps = 12
 
     var body: some View {
         VStack {
@@ -67,7 +67,7 @@ struct OnboardingFlow: View {
                                         action: requestHealth,
                                         required: false)
                 case 10: addWidgetStep
-                default: finalStep
+                default: landingPage
                 }
             }
             .frame(maxHeight: .infinity)
@@ -75,6 +75,7 @@ struct OnboardingFlow: View {
             bottomButtons
                 .padding()
         }
+        .tint(VNColor.accent)
     }
 
     // MARK: - Steps
@@ -83,7 +84,7 @@ struct OnboardingFlow: View {
         VStack(spacing: 24) {
             Image(systemName: "video.fill")
                 .font(.system(size: 80))
-                .foregroundStyle(.red)
+                .foregroundStyle(VNColor.accent)
             Text("VlogNudge")
                 .font(.largeTitle.bold())
             Text("Film a day-in-the-life without remembering to. The app watches context and nudges when it's actually a good moment.")
@@ -134,7 +135,7 @@ struct OnboardingFlow: View {
                         Spacer()
                         if settings.frequency == freq {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(VNColor.accent)
                         }
                     }
                     .padding()
@@ -154,7 +155,7 @@ struct OnboardingFlow: View {
         VStack(spacing: 24) {
             Image(systemName: icon)
                 .font(.system(size: 64))
-                .foregroundStyle(.blue)
+                .foregroundStyle(VNColor.accent)
             Text(title)
                 .font(.largeTitle.bold())
             Text(body)
@@ -174,7 +175,7 @@ struct OnboardingFlow: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.blue, in: RoundedRectangle(cornerRadius: 12))
+                    .background(VNColor.accent, in: RoundedRectangle(cornerRadius: 12))
             }
 
             if !required {
@@ -191,7 +192,7 @@ struct OnboardingFlow: View {
         VStack(spacing: 24) {
             Image(systemName: "square.grid.2x2.fill")
                 .font(.system(size: 64))
-                .foregroundStyle(.purple)
+                .foregroundStyle(VNColor.accent)
             Text("Add a Lock Screen widget")
                 .font(.largeTitle.bold())
             Text("The widget shows your next nudge and today's progress. It's a big part of how the app works.")
@@ -207,25 +208,39 @@ struct OnboardingFlow: View {
         .padding()
     }
 
-    private var finalStep: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 80))
-                .foregroundStyle(.green)
-            Text("All set")
+    private var landingPage: some View {
+        VStack(spacing: 28) {
+            Spacer()
+
+            Image(systemName: "video.fill")
+                .font(.system(size: 72))
+                .foregroundStyle(VNColor.accent)
+
+            Text("You're all set")
                 .font(.largeTitle.bold())
-            Button("Start using VlogNudge") {
+
+            Text("VlogNudge will start sending you nudges at the right moments. Just tap and film.")
+                .font(.title3)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
+
+            Spacer()
+
+            Button {
                 hasCompletedOnboarding = true
                 Task {
                     await NudgeScheduler.shared.ensureTodayIsScheduled(context: modelContext)
                 }
+            } label: {
+                Text("Start Vlogging")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(VNColor.accent, in: RoundedRectangle(cornerRadius: 14))
             }
-            .font(.headline)
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.blue, in: RoundedRectangle(cornerRadius: 12))
-            .padding()
+            .padding(.horizontal)
         }
         .padding()
     }
@@ -238,14 +253,15 @@ struct OnboardingFlow: View {
                 Button("Back") { step -= 1 }
             }
             Spacer()
-            if step < 3 && step != steps - 1 {
+            if step < 3 {
                 Button("Next") { step += 1 }
                     .buttonStyle(.borderedProminent)
-            } else if step == steps - 1 {
-                EmptyView()
             } else if step == 10 {
                 Button("Continue") { step += 1 }
                     .buttonStyle(.borderedProminent)
+            } else if step >= steps - 1 {
+                // Landing page has its own button
+                EmptyView()
             }
         }
     }

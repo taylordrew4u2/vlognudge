@@ -145,21 +145,9 @@ enum NudgeScorer {
             }
         }
 
-        if settings.useScreenTime {
-            if let unlocks = context.unlocksInLast10Min, unlocks >= 5 {
-                score += 1
-                reasons.append("doomscroll_detected")
-            }
-        }
-
         if context.isCharging {
             score += 1
             reasons.append("just_charging")
-        }
-
-        if settings.useWeather, context.weatherCondition == "just_changed" {
-            score += 2
-            reasons.append("weather_changed")
         }
 
         // MARK: Decision

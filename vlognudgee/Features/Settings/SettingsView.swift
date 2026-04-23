@@ -2,6 +2,8 @@
 //  SettingsView.swift
 //  VlogNudge
 //
+//  6:3:1 — Dominant bg, Secondary rows/sections, Accent toggles & links.
+//
 
 import SwiftUI
 import SwiftData
@@ -35,6 +37,9 @@ struct SettingsView: View {
                 permissionsSection
                 aboutSection
             }
+            .scrollContentBackground(.hidden)
+            .background(VNColor.dominant)
+            .tint(VNColor.accent)
             .navigationTitle("Settings")
         }
     }
@@ -54,13 +59,14 @@ struct SettingsView: View {
             .pickerStyle(.segmented)
 
             Text(settings.frequency.blurb)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(VNFont.caption)
+                .foregroundStyle(VNColor.textSecondary)
         } header: {
             Text("Frequency")
         } footer: {
             Text("You can always hit Record manually regardless of frequency.")
         }
+        .listRowBackground(VNColor.secondary)
     }
 
     // MARK: - Schedule
@@ -82,6 +88,7 @@ struct SettingsView: View {
                     in: 20...180,
                     step: 5)
         }
+        .listRowBackground(VNColor.secondary)
     }
 
     // MARK: - Quiet Hours
@@ -103,6 +110,7 @@ struct SettingsView: View {
                            displayedComponents: .hourAndMinute)
             }
         }
+        .listRowBackground(VNColor.secondary)
     }
 
     // MARK: - Context Signals
@@ -121,20 +129,15 @@ struct SettingsView: View {
             Toggle("HealthKit (workouts)",
                    isOn: Binding(get: { settings.useHealth },
                                  set: { settings.useHealth = $0; save() }))
-            Toggle("Weather",
-                   isOn: Binding(get: { settings.useWeather },
-                                 set: { settings.useWeather = $0; save() }))
             Toggle("Focus mode awareness",
                    isOn: Binding(get: { settings.useFocus },
                                  set: { settings.useFocus = $0; save() }))
-            Toggle("Screen Time signals",
-                   isOn: Binding(get: { settings.useScreenTime },
-                                 set: { settings.useScreenTime = $0; save() }))
         } header: {
             Text("Context Signals")
         } footer: {
             Text("Each signal makes nudges smarter. Turn off any that feel wrong.")
         }
+        .listRowBackground(VNColor.secondary)
     }
 
     // MARK: - Notifications
@@ -159,6 +162,7 @@ struct SettingsView: View {
                     )
                 }
             }
+            .foregroundStyle(VNColor.accent)
 
             Toggle("End-of-day recap",
                    isOn: Binding(get: { settings.enableEndOfDayRecap },
@@ -167,6 +171,7 @@ struct SettingsView: View {
                    isOn: Binding(get: { settings.enableMidpointCheckIn },
                                  set: { settings.enableMidpointCheckIn = $0; save() }))
         }
+        .listRowBackground(VNColor.secondary)
     }
 
     // MARK: - Capture
@@ -178,6 +183,7 @@ struct SettingsView: View {
                                    set: { settings.softClipLengthCap = $0; save() }),
                     in: 15...300, step: 5)
         }
+        .listRowBackground(VNColor.secondary)
     }
 
     // MARK: - Bad Day
@@ -189,10 +195,10 @@ struct SettingsView: View {
                     settings.badDayUntil = nil
                     save()
                 }
-                .foregroundStyle(.red)
+                .foregroundStyle(VNColor.destructive)
                 Text("Muted until \(until, style: .time)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(VNFont.caption)
+                    .foregroundStyle(VNColor.textSecondary)
             } else {
                 Button("Bad day — mute nudges for today") {
                     let endOfDay = Calendar.current.date(
@@ -204,11 +210,12 @@ struct SettingsView: View {
                         await NotificationService.shared.cancelAllScheduledNudges()
                     }
                 }
-                .foregroundStyle(.orange)
+                .foregroundStyle(VNColor.warning)
             }
         } footer: {
             Text("No guilt. Tomorrow resets normally.")
         }
+        .listRowBackground(VNColor.secondary)
     }
 
     // MARK: - Permissions
@@ -225,6 +232,7 @@ struct SettingsView: View {
                 NudgeAnalyticsView()
             }
         }
+        .listRowBackground(VNColor.secondary)
     }
 
     // MARK: - About
@@ -233,9 +241,10 @@ struct SettingsView: View {
         Section("About") {
             LabeledContent("Version") {
                 Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(VNColor.textSecondary)
             }
         }
+        .listRowBackground(VNColor.secondary)
     }
 
     // MARK: - Helpers
@@ -259,7 +268,7 @@ struct SettingsView: View {
     }
 }
 
-// MARK: - Permissions Status
+// MARK: - Permissions Status (themed)
 
 struct PermissionsStatusView: View {
     @State private var notificationGranted = false
@@ -275,14 +284,17 @@ struct PermissionsStatusView: View {
             HStack {
                 Text("Photos")
                 Spacer()
-                Text(photosStatus).foregroundStyle(.secondary)
+                Text(photosStatus).foregroundStyle(VNColor.textSecondary)
             }
             Button("Open iOS Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
+            .foregroundStyle(VNColor.accent)
         }
+        .scrollContentBackground(.hidden)
+        .background(VNColor.dominant)
         .navigationTitle("Permissions")
         .task {
             await refresh()
@@ -294,7 +306,7 @@ struct PermissionsStatusView: View {
             Text(name)
             Spacer()
             Image(systemName: granted ? "checkmark.circle.fill" : "xmark.circle")
-                .foregroundStyle(granted ? .green : .red)
+                .foregroundStyle(granted ? VNColor.success : VNColor.destructive)
         }
     }
 

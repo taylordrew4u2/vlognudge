@@ -13,7 +13,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     static let shared = LocationService()
 
     private let manager = CLLocationManager()
-    private(set) var currentAuthorizationStatus: CLAuthorizationStatus = .notDetermined
+    private var currentAuthorizationStatus: CLAuthorizationStatus = .notDetermined
 
     private override init() {
         super.init()

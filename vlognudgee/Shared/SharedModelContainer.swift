@@ -18,7 +18,8 @@ enum SharedModelContainer {
             NudgeEvent.self,
             Geofence.self,
             IdeaMemo.self,
-            UserSettings.self
+            UserSettings.self,
+            VlogAlbum.self
         ])
 
         let groupContainerURL = FileManager.default
@@ -34,7 +35,15 @@ enum SharedModelContainer {
         do {
             return try ModelContainer(for: schema, configurations: [config])
         } catch {
-            fatalError("Failed to initialize shared ModelContainer: \(error)")
+            // If the store is incompatible, delete and recreate rather than crashing.
+            // Acceptable pre-launch; replace with proper migration once shipping.
+            print("ModelContainer init failed: \(error). Resetting store.")
+            try? FileManager.default.removeItem(at: groupContainerURL)
+            do {
+                return try ModelContainer(for: schema, configurations: [config])
+            } catch {
+                fatalError("Failed to initialize shared ModelContainer after reset: \(error)")
+            }
         }
     }()
 

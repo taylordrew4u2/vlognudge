@@ -51,6 +51,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BA39EF772F99449600BC11D4 /* vlogExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = vlogExtension.entitlements; sourceTree = "<group>"; };
 		BA4339512F9854F700185CA3 /* vlogExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = vlogExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA4339532F9854F700185CA3 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		BA4339552F9854F700185CA3 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -125,6 +126,7 @@
 		BAF19BAE2F97E2C90087AC0F = {
 			isa = PBXGroup;
 			children = (
+				BA39EF772F99449600BC11D4 /* vlogExtension.entitlements */,
 				BAF19BB92F97E2C90087AC0F /* vlognudgee */,
 				BA4339572F9854F700185CA3 /* vlog */,
 				BA4339522F9854F700185CA3 /* Frameworks */,
@@ -277,14 +279,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = vlogExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "vlognudgee/Features/Settings/SettingsView.swift vlognudgee/Services/LocationService.swift vlognudgee/Services/LiveActivityAttributes.swift vlognudgee/Intents/AppIntents.swift vlognudgee/Models/Models.swift vlognudgee/Services/NotificationDelegate.swift vlognudgee/Features/Onboarding vlognudgee/Shared vlognudgee/Info.plist vlognudgee/Services/NotificationService.swift vlog/vlogLiveActivity.swift vlog/vlogControl.swift vlognudgee/Shared/AppConstants.swift vlog/AppIntent.swift vlognudgee/Shared/SharedModelContainer.swift vlognudgee/vlognudgee.entitlements vlognudgee/Features/Today vlognudgee/Services/PhotosService.swift vlognudgee/Features/Settings/NudgeAnalyticsView.swift vlognudgee/Services/NudgeScheduler.swift vlognudgee/Features/Timeline vlognudgee vlognudgee/AppState.swift vlognudgee/Models vlognudgee/Services/MotionService.swift vlognudgee/Features/Today/TodayView.swift vlognudgee/Intents vlognudgee/Features/Settings/GeofenceManagementView.swift vlog/Info.plist vlognudgee/Assets.xcassets vlog/vlogBundle.swift vlognudgee/Services/HealthService.swift vlognudgee/Services/ScreenTimeService.swift vlognudgee/Features/Capture/CaptureView.swift vlognudgee/Features/IdeaMemo vlognudgee/RootView.swift vlognudgee/Services/RecordingService.swift vlognudgee/Shared/DateHelpers.swift vlognudgee/Features/Settings vlognudgee/Features/IdeaMemo/IdeasView.swift vlog/vlog.swift vlog vlognudgee/Services vlognudgee/Features/Timeline/TimelineView.swift vlognudgee/Services/NudgeScorer.swift vlognudgee/Features/Onboarding/OnboardingFlow.swift vlog/Assets.xcassets vlognudgee/Services/FocusService.swift vlognudgee/Services/PromptGenerator.swift vlognudgee/VlogNudgeApp.swift vlognudgee/Services/CalendarService.swift vlognudgee/Services/LiveActivityController.swift vlognudgee/Features vlognudgee/Services/WeatherService.swift vlognudgee/Features/Capture";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = R44WG942GS;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = vlog/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = vlog;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -292,6 +296,8 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				NEW_SETTING = "";
+				NEW_SETTING1 = "";
 				PRODUCT_BUNDLE_IDENTIFIER = comedy.vlognudgee.vlog;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -309,14 +315,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = vlogExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "vlognudgee/Features/Settings/SettingsView.swift vlognudgee/Services/LocationService.swift vlognudgee/Services/LiveActivityAttributes.swift vlognudgee/Intents/AppIntents.swift vlognudgee/Models/Models.swift vlognudgee/Services/NotificationDelegate.swift vlognudgee/Features/Onboarding vlognudgee/Shared vlognudgee/Info.plist vlognudgee/Services/NotificationService.swift vlog/vlogLiveActivity.swift vlog/vlogControl.swift vlognudgee/Shared/AppConstants.swift vlog/AppIntent.swift vlognudgee/Shared/SharedModelContainer.swift vlognudgee/vlognudgee.entitlements vlognudgee/Features/Today vlognudgee/Services/PhotosService.swift vlognudgee/Features/Settings/NudgeAnalyticsView.swift vlognudgee/Services/NudgeScheduler.swift vlognudgee/Features/Timeline vlognudgee vlognudgee/AppState.swift vlognudgee/Models vlognudgee/Services/MotionService.swift vlognudgee/Features/Today/TodayView.swift vlognudgee/Intents vlognudgee/Features/Settings/GeofenceManagementView.swift vlog/Info.plist vlognudgee/Assets.xcassets vlog/vlogBundle.swift vlognudgee/Services/HealthService.swift vlognudgee/Services/ScreenTimeService.swift vlognudgee/Features/Capture/CaptureView.swift vlognudgee/Features/IdeaMemo vlognudgee/RootView.swift vlognudgee/Services/RecordingService.swift vlognudgee/Shared/DateHelpers.swift vlognudgee/Features/Settings vlognudgee/Features/IdeaMemo/IdeasView.swift vlog/vlog.swift vlog vlognudgee/Services vlognudgee/Features/Timeline/TimelineView.swift vlognudgee/Services/NudgeScorer.swift vlognudgee/Features/Onboarding/OnboardingFlow.swift vlog/Assets.xcassets vlognudgee/Services/FocusService.swift vlognudgee/Services/PromptGenerator.swift vlognudgee/VlogNudgeApp.swift vlognudgee/Services/CalendarService.swift vlognudgee/Services/LiveActivityController.swift vlognudgee/Features vlognudgee/Services/WeatherService.swift vlognudgee/Features/Capture";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = R44WG942GS;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = vlog/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = vlog;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -324,6 +332,8 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				NEW_SETTING = "";
+				NEW_SETTING1 = "";
 				PRODUCT_BUNDLE_IDENTIFIER = comedy.vlognudgee.vlog;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -348,6 +358,19 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = vlognudgee/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = VlogNudge;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Same — reads upcoming and just-ended events.";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "We skip nudges during your events and nudge right after they end.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "We use your camera to film vlog clips.";
+				INFOPLIST_KEY_NSFocusStatusUsageDescription = "So we don't interrupt you in Sleep or Do Not Disturb.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Post-workout is a great vlog moment.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "So we can trigger nudges when you arrive at places even if the app is backgrounded.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "For location-based nudges like \"just got home.\"";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We record audio with your vlog clips.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "So we avoid nudging while driving and detect when you arrive somewhere.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Clips save to a Daily Vlogs album.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We look up clips you've saved so the app can show them in the timeline.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -380,6 +403,19 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = vlognudgee/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = VlogNudge;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Same — reads upcoming and just-ended events.";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "We skip nudges during your events and nudge right after they end.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "We use your camera to film vlog clips.";
+				INFOPLIST_KEY_NSFocusStatusUsageDescription = "So we don't interrupt you in Sleep or Do Not Disturb.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Post-workout is a great vlog moment.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "So we can trigger nudges when you arrive at places even if the app is backgrounded.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "For location-based nudges like \"just got home.\"";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We record audio with your vlog clips.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "So we avoid nudging while driving and detect when you arrive somewhere.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Clips save to a Daily Vlogs album.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We look up clips you've saved so the app can show them in the timeline.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

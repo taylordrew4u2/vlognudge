@@ -51,18 +51,7 @@ enum PromptGenerator {
                 body: "Sweaty, alive, camera rolling?"
             )
         }
-        if reason == "weather_changed" {
-            return NudgePrompt(
-                title: "Weather just shifted",
-                body: "Grab a shot — B-roll gold."
-            )
-        }
-        if reason == "doomscroll_detected" {
-            return NudgePrompt(
-                title: "Currently scrolling",
-                body: "Flip the camera instead?"
-            )
-        }
+
         if reason == "end_of_day_recap" {
             return NudgePrompt(
                 title: "Recap the day?",

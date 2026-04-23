@@ -2,6 +2,8 @@
 //  CaptureView.swift
 //  VlogNudge
 //
+//  6:3:1 — Full-screen camera with accent overlays and themed post-capture.
+//
 
 import SwiftUI
 import SwiftData
@@ -10,11 +12,13 @@ import AVFoundation
 struct CaptureView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
     @State private var recordingService = RecordingService.shared
     @State private var recordingTimer: Timer?
     @State private var elapsedSeconds: Int = 0
     @State private var showPostRecord = false
     @State private var lastSavedClip: Clip?
+    @State private var autoDismissTask: Task<Void, Never>?
 
     let initialPrompt: String?
 
@@ -22,21 +26,37 @@ struct CaptureView: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            // Camera preview
             CameraPreviewView(session: recordingService.captureSession)
                 .ignoresSafeArea()
 
-            // Overlay
+            // Semi-transparent gradient at top for readability
+            VStack {
+                LinearGradient(
+                    colors: [.black.opacity(0.5), .clear],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 120)
+                Spacer()
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.4)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 200)
+            }
+            .ignoresSafeArea()
+
             VStack {
                 topBar
                 Spacer()
                 if let prompt = initialPrompt, !prompt.isEmpty {
                     promptPill(prompt)
                 }
-                Spacer().frame(height: 20)
+                Spacer().frame(height: VNSpacing.xl)
                 bottomBar
             }
-            .padding()
+            .padding(VNSpacing.lg)
 
             if showPostRecord {
                 postRecordOverlay
@@ -47,6 +67,7 @@ struct CaptureView: View {
             await setUp()
         }
         .onDisappear {
+            autoDismissTask?.cancel()
             recordingService.stopSession()
         }
     }
@@ -60,7 +81,7 @@ struct CaptureView: View {
         recordingService.startSession()
     }
 
-    // MARK: - Subviews
+    // MARK: - Top Bar
 
     private var topBar: some View {
         HStack {
@@ -70,19 +91,19 @@ struct CaptureView: View {
                 Image(systemName: "xmark")
                     .font(.title2.bold())
                     .foregroundStyle(.white)
-                    .padding(12)
-                    .background(.black.opacity(0.5), in: Circle())
+                    .padding(VNSpacing.md)
+                    .background(.black.opacity(0.4), in: Circle())
             }
 
             Spacer()
 
             if let lastClipTime = lastClipTimeText() {
                 Text(lastClipTime)
-                    .font(.caption.bold())
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(.black.opacity(0.5), in: Capsule())
+                    .font(VNFont.caption)
+                    .foregroundStyle(.white.opacity(0.9))
+                    .padding(.horizontal, VNSpacing.md)
+                    .padding(.vertical, VNSpacing.sm)
+                    .background(.black.opacity(0.4), in: Capsule())
             }
 
             Spacer()
@@ -93,88 +114,102 @@ struct CaptureView: View {
                 Image(systemName: "arrow.triangle.2.circlepath.camera")
                     .font(.title2)
                     .foregroundStyle(.white)
-                    .padding(12)
-                    .background(.black.opacity(0.5), in: Circle())
+                    .padding(VNSpacing.md)
+                    .background(.black.opacity(0.4), in: Circle())
             }
         }
     }
 
+    // MARK: - Prompt Pill
+
     private func promptPill(_ text: String) -> some View {
         Text(text)
-            .font(.callout)
+            .font(VNFont.callout)
             .foregroundStyle(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(.black.opacity(0.6), in: Capsule())
-            .padding(.horizontal, 40)
+            .padding(.horizontal, VNSpacing.lg)
+            .padding(.vertical, VNSpacing.md)
+            .background(VNColor.secondary.opacity(0.8), in: Capsule())
+            .padding(.horizontal, VNSpacing.xxxl)
             .multilineTextAlignment(.center)
     }
 
+    // MARK: - Bottom Bar (record button)
+
     private var bottomBar: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: VNSpacing.lg) {
             if recordingService.isRecording {
-                HStack(spacing: 6) {
+                HStack(spacing: VNSpacing.sm) {
                     Circle()
-                        .fill(.red)
+                        .fill(VNColor.destructive)
                         .frame(width: 8, height: 8)
                         .opacity(elapsedSeconds.isMultiple(of: 2) ? 1 : 0.3)
                     Text(formatElapsed(elapsedSeconds))
                         .font(.title3.monospacedDigit().bold())
                         .foregroundStyle(.white)
                 }
+                .padding(.horizontal, VNSpacing.lg)
+                .padding(.vertical, VNSpacing.sm)
+                .background(.black.opacity(0.4), in: Capsule())
             }
 
             Button {
                 toggleRecording()
             } label: {
                 ZStack {
+                    // Outer accent ring
                     Circle()
-                        .stroke(.white, lineWidth: 4)
-                        .frame(width: 80, height: 80)
+                        .stroke(VNColor.accent.opacity(0.6), lineWidth: 4)
+                        .frame(width: 84, height: 84)
 
                     if recordingService.isRecording {
+                        // Stop icon (rounded square)
                         RoundedRectangle(cornerRadius: 6)
-                            .fill(.red)
+                            .fill(VNColor.accent)
                             .frame(width: 32, height: 32)
                     } else {
+                        // Record circle — accent colored
                         Circle()
-                            .fill(.red)
-                            .frame(width: 64, height: 64)
+                            .fill(VNColor.accent)
+                            .frame(width: 68, height: 68)
                     }
                 }
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(recordingService.isRecording ? "Stop recording" : "Start recording")
         }
-        .padding(.bottom, 20)
+        .padding(.bottom, VNSpacing.xl)
     }
+
+    // MARK: - Post Record Overlay
 
     private var postRecordOverlay: some View {
         ZStack {
-            Color.black.opacity(0.85).ignoresSafeArea()
-            VStack(spacing: 20) {
+            VNColor.dominant.opacity(0.92).ignoresSafeArea()
+            VStack(spacing: VNSpacing.xl) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 80))
-                    .foregroundStyle(.green)
+                    .foregroundStyle(VNColor.accent)
                 Text("Clip saved")
-                    .font(.title2.bold())
-                    .foregroundStyle(.white)
+                    .font(VNFont.title2)
+                    .foregroundStyle(VNColor.textPrimary)
                 if let clip = lastSavedClip {
-                    HStack {
+                    HStack(spacing: VNSpacing.sm) {
                         Text(Int(clip.duration).description + "s")
-                        Text("•")
+                        Text("·")
                         Text(clip.recordedAt, style: .time)
                     }
-                    .foregroundStyle(.white.opacity(0.7))
+                    .font(VNFont.callout)
+                    .foregroundStyle(VNColor.textSecondary)
 
                     Button {
                         clip.starred.toggle()
                         try? modelContext.save()
                     } label: {
                         Label(clip.starred ? "Starred" : "Star", systemImage: clip.starred ? "star.fill" : "star")
-                            .font(.headline)
-                            .foregroundStyle(clip.starred ? .yellow : .white)
+                            .font(VNFont.headline)
+                            .foregroundStyle(clip.starred ? VNColor.warning : VNColor.textSecondary)
                     }
-                    .padding(.top, 12)
+                    .padding(.top, VNSpacing.md)
                 }
             }
         }
@@ -205,23 +240,27 @@ struct CaptureView: View {
         case .success(let rec):
             Task {
                 do {
-                    let assetID = try await PhotosService.saveVideo(at: rec.fileURL)
+                    let albumName = appState.activeAlbumName
+                    let assetID = try await PhotosService.saveVideo(at: rec.fileURL, toAlbumNamed: albumName)
                     let clip = Clip(
                         recordedAt: rec.startDate,
                         duration: rec.duration,
                         photosAssetID: assetID,
-                        topicPrompt: initialPrompt
+                        topicPrompt: initialPrompt,
+                        albumName: albumName
                     )
                     modelContext.insert(clip)
                     try modelContext.save()
                     lastSavedClip = clip
 
-                    // Tell scheduler a clip was filmed
                     await NudgeScheduler.shared.clipWasFilmed(context: modelContext)
 
                     withAnimation { showPostRecord = true }
-                    try? await Task.sleep(nanoseconds: 2_000_000_000)
-                    dismiss()
+                    autoDismissTask = Task {
+                        try? await Task.sleep(nanoseconds: 2_000_000_000)
+                        guard !Task.isCancelled else { return }
+                        dismiss()
+                    }
                 } catch {
                     print("Failed to save clip: \(error)")
                     dismiss()

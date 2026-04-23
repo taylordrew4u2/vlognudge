@@ -81,7 +81,7 @@ enum PhotosService {
     }
 
     /// Fetch an AVAsset for playback given a local identifier.
-    static func fetchAVAsset(localIdentifier: String) -> AVAsset? {
+    static func fetchAVAsset(localIdentifier: String) async -> AVAsset? {
         let result = PHAsset.fetchAssets(withLocalIdentifiers: [localIdentifier], options: nil)
         guard let phAsset = result.firstObject else { return nil }
 
@@ -89,14 +89,10 @@ enum PhotosService {
         options.isNetworkAccessAllowed = true
         options.deliveryMode = .highQualityFormat
 
-        var avAsset: AVAsset?
-        let semaphore = DispatchSemaphore(value: 0)
-
-        PHImageManager.default().requestAVAsset(forVideo: phAsset, options: options) { asset, _, _ in
-            avAsset = asset
-            semaphore.signal()
+        return await withCheckedContinuation { continuation in
+            PHImageManager.default().requestAVAsset(forVideo: phAsset, options: options) { asset, _, _ in
+                continuation.resume(returning: asset)
+            }
         }
-        semaphore.wait()
-        return avAsset
     }
 }

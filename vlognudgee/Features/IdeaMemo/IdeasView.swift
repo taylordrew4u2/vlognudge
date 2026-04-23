@@ -2,6 +2,8 @@
 //  IdeasView.swift
 //  VlogNudge
 //
+//  6:3:1 — Dominant bg, Secondary list rows, Accent play/record controls.
+//
 
 import SwiftUI
 import SwiftData
@@ -16,18 +18,34 @@ struct IdeasView: View {
         NavigationStack {
             Group {
                 if memos.isEmpty {
-                    ContentUnavailableView {
-                        Label("No ideas yet", systemImage: "lightbulb")
-                    } description: {
+                    VStack(spacing: VNSpacing.lg) {
+                        Image(systemName: "lightbulb")
+                            .font(.system(size: 56))
+                            .foregroundStyle(VNColor.textTertiary)
+                        Text("No ideas yet")
+                            .font(VNFont.title2)
+                            .foregroundStyle(VNColor.textPrimary)
                         Text("Hit the button below the next time a vlog idea hits you — we'll surface it as a prompt on your next nudge.")
+                            .font(VNFont.callout)
+                            .foregroundStyle(VNColor.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, VNSpacing.xxxl)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(VNColor.dominant)
                 } else {
-                    List {
-                        ForEach(memos) { memo in
-                            IdeaRow(memo: memo)
+                    ScrollView {
+                        LazyVStack(spacing: 1) {
+                            ForEach(memos) { memo in
+                                IdeaRow(memo: memo, onDelete: { deleteMemo(memo) })
+                            }
                         }
-                        .onDelete(perform: delete)
+                        .clipShape(RoundedRectangle(cornerRadius: VNRadius.lg))
+                        .padding(.horizontal, VNSpacing.lg)
+                        .padding(.top, VNSpacing.sm)
+                        .padding(.bottom, 100) // room for bottom button
                     }
+                    .background(VNColor.dominant)
                 }
             }
             .navigationTitle("Ideas")
@@ -35,18 +53,29 @@ struct IdeasView: View {
                 Button {
                     showRecorder = true
                 } label: {
-                    HStack {
+                    HStack(spacing: VNSpacing.sm) {
                         Image(systemName: "mic.fill")
                         Text("Capture idea")
                     }
-                    .font(.headline)
-                    .foregroundStyle(.white)
+                    .font(VNFont.headline)
+                    .foregroundStyle(VNColor.dominant)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue, in: RoundedRectangle(cornerRadius: 14))
-                    .padding()
+                    .padding(.vertical, VNSpacing.lg)
+                    .background(VNColor.accent, in: RoundedRectangle(cornerRadius: VNRadius.lg))
+                    .padding(.horizontal, VNSpacing.lg)
+                    .padding(.bottom, VNSpacing.sm)
                 }
                 .buttonStyle(.plain)
+                .background(
+                    LinearGradient(
+                        colors: [VNColor.dominant, VNColor.dominant.opacity(0)],
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                    .frame(height: 40)
+                    .allowsHitTesting(false),
+                    alignment: .top
+                )
             }
             .sheet(isPresented: $showRecorder) {
                 IdeaRecorderView()
@@ -54,50 +83,61 @@ struct IdeasView: View {
         }
     }
 
-    private func delete(at offsets: IndexSet) {
-        for index in offsets {
-            let memo = memos[index]
-            if let path = memo.audioFilePath {
-                try? FileManager.default.removeItem(atPath: path)
-            }
-            modelContext.delete(memo)
+    private func deleteMemo(_ memo: IdeaMemo) {
+        if let path = memo.audioFilePath {
+            try? FileManager.default.removeItem(atPath: path)
         }
+        modelContext.delete(memo)
         try? modelContext.save()
     }
 }
 
+// MARK: - Idea Row (themed)
+
 struct IdeaRow: View {
     @Environment(\.modelContext) private var modelContext
     let memo: IdeaMemo
+    let onDelete: () -> Void
     @State private var isPlaying = false
     @State private var player: AVAudioPlayer?
 
     var body: some View {
-        HStack {
+        HStack(spacing: VNSpacing.md) {
             Button {
                 togglePlayback()
             } label: {
                 Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                    .font(.title)
-                    .foregroundStyle(.blue)
+                    .font(.system(size: 38))
+                    .foregroundStyle(VNColor.accent)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: VNSpacing.xs) {
                 Text(memo.createdAt, style: .date)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(VNFont.caption)
+                    .foregroundStyle(VNColor.textTertiary)
                 Text(memo.createdAt, style: .time)
-                    .font(.headline)
+                    .font(VNFont.headline)
+                    .foregroundStyle(VNColor.textPrimary)
             }
 
             Spacer()
 
             if memo.usedAt != nil {
-                Label("Used", systemImage: "checkmark.circle.fill")
-                    .labelStyle(.iconOnly)
-                    .foregroundStyle(.green)
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(VNColor.success)
+            }
+
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Image(systemName: "trash")
+                    .font(.subheadline)
+                    .foregroundStyle(VNColor.textTertiary)
             }
         }
+        .padding(VNSpacing.lg)
+        .background(VNColor.secondary)
+        .accessibilityLabel("Idea from \(memo.createdAt.formatted())")
     }
 
     private func togglePlayback() {
@@ -118,7 +158,7 @@ struct IdeaRow: View {
     }
 }
 
-// MARK: - Recorder
+// MARK: - Recorder (themed)
 
 struct IdeaRecorderView: View {
     @Environment(\.modelContext) private var modelContext
@@ -130,16 +170,27 @@ struct IdeaRecorderView: View {
     @State private var timer: Timer?
 
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: VNSpacing.xxxl) {
             Spacer()
 
-            Image(systemName: "mic.circle.fill")
-                .font(.system(size: 120))
-                .foregroundStyle(isRecording ? .red : .blue)
-                .symbolEffect(.pulse, isActive: isRecording)
+            ZStack {
+                // Glow ring when recording
+                if isRecording {
+                    Circle()
+                        .fill(VNColor.accentGlow)
+                        .frame(width: 160, height: 160)
+                }
+
+                Image(systemName: "mic.circle.fill")
+                    .font(.system(size: 120))
+                    .foregroundStyle(isRecording ? VNColor.accent : VNColor.textTertiary)
+                    .symbolEffect(.pulse, isActive: isRecording)
+            }
+            .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: isRecording)
 
             Text(isRecording ? "Recording \(elapsed)s" : "Tap the button to start")
-                .font(.title2.bold())
+                .font(VNFont.title2)
+                .foregroundStyle(VNColor.textPrimary)
 
             Spacer()
 
@@ -147,20 +198,24 @@ struct IdeaRecorderView: View {
                 toggleRecording()
             } label: {
                 Text(isRecording ? "Stop and save" : "Start recording")
-                    .font(.headline)
-                    .foregroundStyle(.white)
+                    .font(VNFont.headline)
+                    .foregroundStyle(isRecording ? VNColor.textPrimary : VNColor.dominant)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(isRecording ? Color.red : Color.blue,
-                                in: RoundedRectangle(cornerRadius: 14))
+                    .padding(.vertical, VNSpacing.lg)
+                    .background(
+                        isRecording ? VNColor.destructive : VNColor.accent,
+                        in: RoundedRectangle(cornerRadius: VNRadius.lg)
+                    )
             }
             .buttonStyle(.plain)
-            .padding()
+            .padding(.horizontal, VNSpacing.lg)
 
             Button("Cancel") { dismiss() }
-                .foregroundStyle(.secondary)
-                .padding(.bottom)
+                .font(VNFont.subheadline)
+                .foregroundStyle(VNColor.textSecondary)
+                .padding(.bottom, VNSpacing.lg)
         }
+        .background(VNColor.dominant)
         .onAppear {
             prepareAudioSession()
         }

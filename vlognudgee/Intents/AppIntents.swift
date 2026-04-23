@@ -52,7 +52,12 @@ struct RecordClipIntent: AppIntent {
     static var openAppWhenRun: Bool = true
 
     func perform() async throws -> some IntentResult {
+        // Enqueue to inbox (always works, even cross-process)
         AppIntentsInbox.enqueue(.record)
+        // Also set directly in case we're running in the app process
+        await MainActor.run {
+            AppState.shared.requestCapture(prompt: nil)
+        }
         return .result()
     }
 }
@@ -64,6 +69,9 @@ struct CaptureIdeaIntent: AppIntent {
 
     func perform() async throws -> some IntentResult {
         AppIntentsInbox.enqueue(.idea)
+        await MainActor.run {
+            AppState.shared.deepLink = .ideaMemo
+        }
         return .result()
     }
 }

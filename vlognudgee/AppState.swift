@@ -20,6 +20,7 @@ final class AppState {
     var deepLink: DeepLink = .none
     var isRecording: Bool = false
     var currentPrompt: String?
+    var activeAlbumName: String = AppConstants.photosAlbumName
 
     private init() {}
 

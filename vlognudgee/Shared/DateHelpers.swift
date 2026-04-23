@@ -37,13 +37,6 @@ enum DateHelpers {
         }
     }
 
-    static func humanReadable(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.timeStyle = .short
-        f.dateStyle = .none
-        return f.string(from: date)
-    }
-
     static func minutesAgo(from date: Date) -> Int {
         Int(Date().timeIntervalSince(date) / 60)
     }
