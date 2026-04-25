@@ -327,9 +327,10 @@ Wraps `AVCaptureSession`. Responsibilities:
 - Transition events emitted via AsyncStream
 
 ### LocationService
-- Requests Always authorization with clear messaging
-- Starts significant location changes (low battery)
-- Registers `CLCircularRegion` for each saved Geofence, monitors entry/exit
+- Requests When In Use authorization first
+- Requests Always authorization only after the user enables Place Nudges background location in Settings
+- Starts significant location changes (low battery) only while Place Nudges background location is active
+- Registers `CLCircularRegion` for each saved Geofence, monitors entry/exit while Place Nudges background location is active
 - On entry/exit, writes an event to a shared App Group defaults key so other components (NudgeScheduler) can react
 - Handles "new location" detection by comparing against known geofences
 
@@ -444,7 +445,7 @@ Stepped flow, each step full-screen:
 5. **Permission: Photos** — "clips save to a Daily Vlogs album for CapCut"
 6. **Permission: Notifications** — "how nudges reach you. You control sound and frequency."
 7. **Permission: Motion** (optional, skippable) — "so we don't nudge while you're driving, and we know when you just arrived somewhere"
-8. **Permission: Location Always** (optional) — "for location-based nudges like 'just got home'"
+8. **Permission: Location When In Use** (optional) — "to add saved places for Place Nudges"; Always permission is requested later only from Settings → Location / Background Location when the user enables background Place Nudges
 9. **Permission: Calendar** (optional) — "we'll skip nudges during your events"
 10. **Permission: Health** (optional) — "post-workout is a great nudge moment"
 11. **Lock Screen widget add prompt** — with screenshot, deep link to add widget
