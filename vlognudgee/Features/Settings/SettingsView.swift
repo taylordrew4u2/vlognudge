@@ -282,6 +282,7 @@ struct BackgroundLocationSettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Geofence.name) private var geofences: [Geofence]
     @State private var locationService = LocationService.shared
+    @State private var placeNudgeError: String?
 
     var body: some View {
         List {
@@ -340,6 +341,12 @@ struct BackgroundLocationSettingsView: View {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(url)
                     }
+                }
+
+                if let placeNudgeError {
+                    Text(placeNudgeError)
+                        .font(VNFont.caption)
+                        .foregroundStyle(VNColor.destructive)
                 }
             }
 
@@ -410,13 +417,25 @@ struct BackgroundLocationSettingsView: View {
                 radius: 200
             )
             modelContext.insert(demo)
-            try? modelContext.save()
+            do {
+                try modelContext.save()
+            } catch {
+                placeNudgeError = "Could not save the demo place. Please try again."
+                return
+            }
         }
         refreshGeofences()
     }
 
     private func refreshGeofences() {
-        let allFences = (try? modelContext.fetch(FetchDescriptor<Geofence>())) ?? []
+        let allFences: [Geofence]
+        do {
+            allFences = try modelContext.fetch(FetchDescriptor<Geofence>())
+            placeNudgeError = nil
+        } catch {
+            placeNudgeError = "Could not refresh saved places. Please try again."
+            return
+        }
         LocationService.shared.refreshGeofences(
             from: allFences,
             near: LocationService.shared.currentLocation
