@@ -275,8 +275,9 @@ struct SettingsView: View {
 // MARK: - Background Location Settings
 
 struct BackgroundLocationSettingsView: View {
-    private static let demoLatitude = 37.3349
-    private static let demoLongitude = -122.0090
+    // Public Apple Park coordinates provide an obvious App Review demo place.
+    private static let appReviewDemoLatitude = 37.3349
+    private static let appReviewDemoLongitude = -122.0090
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Geofence.name) private var geofences: [Geofence]
@@ -316,9 +317,7 @@ struct BackgroundLocationSettingsView: View {
 
                 if locationService.authorizationStatus == .notDetermined {
                     Button("Allow Location While Using App") {
-                        Task {
-                            await locationService.requestWhenInUseAuthorization()
-                        }
+                        locationService.requestWhenInUseAuthorization()
                     }
                     .foregroundStyle(VNColor.accent)
                 }
@@ -406,8 +405,8 @@ struct BackgroundLocationSettingsView: View {
         if !geofences.contains(where: { $0.name == "App Review Demo Place" }) {
             let demo = Geofence(
                 name: "App Review Demo Place",
-                latitude: Self.demoLatitude,
-                longitude: Self.demoLongitude,
+                latitude: Self.appReviewDemoLatitude,
+                longitude: Self.appReviewDemoLongitude,
                 radius: 200
             )
             modelContext.insert(demo)

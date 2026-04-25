@@ -294,7 +294,7 @@ struct OnboardingFlow: View {
     }
 
     private func requestLocation() async {
-        await LocationService.shared.requestWhenInUseAuthorization()
+        LocationService.shared.requestWhenInUseAuthorization()
     }
 
     private func requestCalendar() async {
