@@ -275,6 +275,9 @@ struct SettingsView: View {
 // MARK: - Background Location Settings
 
 struct BackgroundLocationSettingsView: View {
+    private static let demoLatitude = 37.3349
+    private static let demoLongitude = -122.0090
+
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Geofence.name) private var geofences: [Geofence]
     @State private var locationService = LocationService.shared
@@ -403,8 +406,8 @@ struct BackgroundLocationSettingsView: View {
         if !geofences.contains(where: { $0.name == "App Review Demo Place" }) {
             let demo = Geofence(
                 name: "App Review Demo Place",
-                latitude: 37.3349,
-                longitude: -122.0090,
+                latitude: Self.demoLatitude,
+                longitude: Self.demoLongitude,
                 radius: 200
             )
             modelContext.insert(demo)
