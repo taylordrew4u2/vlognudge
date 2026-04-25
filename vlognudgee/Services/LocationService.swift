@@ -37,10 +37,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         manager.requestWhenInUseAuthorization()
     }
 
-    func requestAlwaysAuthorization() async {
-        manager.requestAlwaysAuthorization()
-    }
-
     func enableBackgroundLocation() {
         isBackgroundLocationEnabled = true
         Self.savedBackgroundLocationEnabled = true
