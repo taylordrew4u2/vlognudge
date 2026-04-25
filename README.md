@@ -76,8 +76,8 @@ The intents are defined in the main app and shared with the widget target via ta
 | NSMicrophoneUsageDescription | We record audio with your vlog clips. |
 | NSPhotoLibraryAddUsageDescription | Clips save to a Daily Vlogs album. |
 | NSMotionUsageDescription | So we avoid nudging while driving and detect when you arrive somewhere. |
-| NSLocationWhenInUseUsageDescription | For location-based nudges like "just got home." |
-| NSLocationAlwaysAndWhenInUseUsageDescription | So we can trigger nudges when you arrive at places even if the app is backgrounded. |
+| NSLocationWhenInUseUsageDescription | VlogNudge uses your location while the app is open to help you add saved places for Place Nudges. |
+| NSLocationAlwaysAndWhenInUseUsageDescription | Enable Background Location for Place Nudges so VlogNudge can remind you to record when you arrive at or leave saved places even while the app is not open. |
 | NSCalendarsUsageDescription | We skip nudges during your events and nudge right after they end. |
 | NSCalendarsFullAccessUsageDescription | Same — reads upcoming and just-ended events. |
 | NSHealthShareUsageDescription | Post-workout is a great vlog moment. |
