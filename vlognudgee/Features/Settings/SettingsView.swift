@@ -275,9 +275,9 @@ struct SettingsView: View {
 // MARK: - Background Location Settings
 
 struct BackgroundLocationSettingsView: View {
-    // Public Apple Park coordinates (37.3349° N, 122.0090° W) provide an obvious App Review demo place.
-    private static let appReviewDemoLatitude = 37.3349
-    private static let appReviewDemoLongitude = -122.0090
+    // Public Apple Park coordinates (positive latitude north, negative longitude west) provide an obvious App Review demo place.
+    private static let appReviewDemoLatitude: CLLocationDegrees = 37.3349
+    private static let appReviewDemoLongitude: CLLocationDegrees = -122.0090
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Geofence.name) private var geofences: [Geofence]
@@ -420,7 +420,7 @@ struct BackgroundLocationSettingsView: View {
             do {
                 try modelContext.save()
             } catch {
-                placeNudgeError = "Could not save the demo place. Please try again."
+                placeNudgeError = "Could not save the demo place: \(error.localizedDescription)"
                 return
             }
         }
@@ -433,7 +433,7 @@ struct BackgroundLocationSettingsView: View {
             allFences = try modelContext.fetch(FetchDescriptor<Geofence>())
             placeNudgeError = nil
         } catch {
-            placeNudgeError = "Could not refresh saved places. Please try again."
+            placeNudgeError = "Could not refresh saved places: \(error.localizedDescription)"
             return
         }
         LocationService.shared.refreshGeofences(
