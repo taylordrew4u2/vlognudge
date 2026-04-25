@@ -275,7 +275,7 @@ struct SettingsView: View {
 // MARK: - Background Location Settings
 
 struct BackgroundLocationSettingsView: View {
-    // Public Apple Park coordinates provide an obvious App Review demo place.
+    // Public Apple Park coordinates (37.3349° N, 122.0090° W) provide an obvious App Review demo place.
     private static let appReviewDemoLatitude = 37.3349
     private static let appReviewDemoLongitude = -122.0090
 

@@ -63,6 +63,10 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     }
 
     private func start() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { self.start() }
+            return
+        }
         guard isBackgroundLocationEnabled,
               manager.authorizationStatus == .authorizedAlways else { return }
         manager.allowsBackgroundLocationUpdates = true
@@ -71,6 +75,10 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     }
 
     private func stop() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { self.stop() }
+            return
+        }
         manager.stopMonitoringSignificantLocationChanges()
         for region in manager.monitoredRegions {
             manager.stopMonitoring(for: region)
@@ -122,9 +130,15 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     // MARK: - Delegate
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        authorizationStatus = manager.authorizationStatus
-        if shouldRequestAlwaysAfterWhenInUse,
-           manager.authorizationStatus == .authorizedWhenInUse {
+        let status = manager.authorizationStatus
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async {
+                self.locationManagerDidChangeAuthorization(manager)
+            }
+            return
+        }
+        authorizationStatus = status
+        if shouldRequestAlwaysAfterWhenInUse, status == .authorizedWhenInUse {
             shouldRequestAlwaysAfterWhenInUse = false
             manager.requestAlwaysAuthorization()
         }
@@ -141,6 +155,12 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager,
                          didUpdateLocations locations: [CLLocation]) {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async {
+                self.locationManager(manager, didUpdateLocations: locations)
+            }
+            return
+        }
         // Significant change — useful for detecting "new place not in geofences"
         // Could extend here: compare distance to all known geofences, and if > threshold
         // fire a "new_location" trigger.
@@ -152,6 +172,10 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     }
 
     private func updateBackgroundLocationState() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { self.updateBackgroundLocationState() }
+            return
+        }
         if isBackgroundLocationEnabled, manager.authorizationStatus == .authorizedAlways {
             start()
         } else {
