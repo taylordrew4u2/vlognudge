@@ -275,9 +275,9 @@ struct SettingsView: View {
 // MARK: - Background Location Settings
 
 struct BackgroundLocationSettingsView: View {
-    // Public Apple Park coordinates (positive latitude north, negative longitude west) provide an obvious App Review demo place.
-    private static let demoLatitude: CLLocationDegrees = 37.3349 // 1 Apple Park Way, Cupertino, CA
-    private static let demoLongitude: CLLocationDegrees = -122.0090 // 1 Apple Park Way, Cupertino, CA
+    // Public Apple Park coordinates (1 Apple Park Way, Cupertino, CA) provide an obvious App Review demo place.
+    private static let demoLatitude: CLLocationDegrees = 37.3349
+    private static let demoLongitude: CLLocationDegrees = -122.0090
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Geofence.name) private var geofences: [Geofence]
@@ -304,18 +304,6 @@ struct BackgroundLocationSettingsView: View {
             }
 
             Section("Controls") {
-                Toggle("Place Nudges use background location",
-                       isOn: Binding(
-                        get: { locationService.isBackgroundLocationEnabled },
-                        set: { enabled in
-                            if enabled {
-                                enableBackgroundLocation()
-                            } else {
-                                locationService.disableBackgroundLocation()
-                            }
-                        }
-                       ))
-
                 if locationService.authorizationStatus == .notDetermined {
                     Button("Allow Location While Using App") {
                         locationService.requestWhenInUseAuthorization()
