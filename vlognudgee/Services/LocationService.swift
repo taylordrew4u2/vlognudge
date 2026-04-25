@@ -68,7 +68,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
             return
         }
         guard isBackgroundLocationEnabled,
-              manager.authorizationStatus == .authorizedAlways else { return }
+              authorizationStatus == .authorizedAlways else { return }
         manager.allowsBackgroundLocationUpdates = true
         manager.startMonitoringSignificantLocationChanges()
         isBackgroundLocationActive = true
@@ -93,7 +93,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     /// so we pick the ones nearest the current location.
     func refreshGeofences(from geofences: [Geofence], near location: CLLocation?) {
         guard isBackgroundLocationEnabled,
-              manager.authorizationStatus == .authorizedAlways else {
+              authorizationStatus == .authorizedAlways else {
             stop()
             return
         }
@@ -176,7 +176,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
             DispatchQueue.main.async { self.updateBackgroundLocationState() }
             return
         }
-        if isBackgroundLocationEnabled, manager.authorizationStatus == .authorizedAlways {
+        if isBackgroundLocationEnabled, authorizationStatus == .authorizedAlways {
             start()
         } else {
             stop()
