@@ -32,7 +32,5 @@
 		<string>processing</string>
 		<string>remote-notification</string>
 	</array>
-	<key>CFBundleVersion</key>
-	<string>1</string>
 </dict>
 </plist>

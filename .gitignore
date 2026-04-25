@@ -22,3 +22,12 @@ Package.resolved
 # Secrets
 *.p12
 *.mobileprovision
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+*.ipa
+*.dSYM.zip
+*.mobileprovision
