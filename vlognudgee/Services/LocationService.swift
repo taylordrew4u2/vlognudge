@@ -15,7 +15,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     private static let backgroundLocationEnabledKey = "backgroundLocationNudgesEnabled"
 
     private let manager = CLLocationManager()
-    private var currentAuthorizationStatus: CLAuthorizationStatus = .notDetermined
     private var shouldRequestAlwaysAfterWhenInUse = false
     private(set) var isBackgroundLocationEnabled = false
     private(set) var isBackgroundLocationActive = false
@@ -28,7 +27,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         manager.allowsBackgroundLocationUpdates = false
         manager.pausesLocationUpdatesAutomatically = true
-        currentAuthorizationStatus = manager.authorizationStatus
         authorizationStatus = manager.authorizationStatus
         isBackgroundLocationEnabled = Self.savedBackgroundLocationEnabled
     }
@@ -67,7 +65,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         guard isBackgroundLocationEnabled,
               manager.authorizationStatus == .authorizedAlways else { return }
         manager.allowsBackgroundLocationUpdates = true
-        manager.pausesLocationUpdatesAutomatically = true
         manager.startMonitoringSignificantLocationChanges()
         isBackgroundLocationActive = true
     }
@@ -124,7 +121,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     // MARK: - Delegate
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        currentAuthorizationStatus = manager.authorizationStatus
         authorizationStatus = manager.authorizationStatus
         if shouldRequestAlwaysAfterWhenInUse,
            manager.authorizationStatus == .authorizedWhenInUse {
