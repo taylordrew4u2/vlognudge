@@ -13,6 +13,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     static let shared = LocationService()
 
     private static let backgroundLocationEnabledKey = "backgroundLocationNudgesEnabled"
+    private static let defaultsUnavailableMessage = "App Group UserDefaults unavailable for background location setting."
     private static let defaults = UserDefaults(suiteName: AppConstants.appGroupID)
 
     private let manager = CLLocationManager()
@@ -62,6 +63,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         updateBackgroundLocationState()
     }
 
+    // Private so callers must go through enableBackgroundLocation() and the permission gate.
     private func start() {
         guard Thread.isMainThread else {
             DispatchQueue.main.async { self.start() }
@@ -187,14 +189,14 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     private static var savedBackgroundLocationEnabled: Bool {
         get {
             guard let defaults else {
-                assertionFailure("App Group UserDefaults unavailable for background location setting.")
+                assertionFailure(defaultsUnavailableMessage)
                 return false
             }
             return defaults.bool(forKey: backgroundLocationEnabledKey)
         }
         set {
             guard let defaults else {
-                assertionFailure("App Group UserDefaults unavailable for background location setting.")
+                assertionFailure(defaultsUnavailableMessage)
                 return
             }
             defaults.set(newValue, forKey: backgroundLocationEnabledKey)
