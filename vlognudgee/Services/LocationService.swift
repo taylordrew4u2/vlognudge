@@ -186,7 +186,11 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
 
     private static var savedBackgroundLocationEnabled: Bool {
         get {
-            defaults?.bool(forKey: backgroundLocationEnabledKey) ?? false
+            guard let defaults else {
+                assertionFailure("App Group UserDefaults unavailable for background location setting.")
+                return false
+            }
+            return defaults.bool(forKey: backgroundLocationEnabledKey)
         }
         set {
             guard let defaults else {
