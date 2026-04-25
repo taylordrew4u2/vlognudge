@@ -21,9 +21,14 @@
 	</array>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>VlogNudge does not save data to Health.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Enable Background Location for Place Nudges so VlogNudge can remind you to record when you arrive at or leave saved places even while the app is not open.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>VlogNudge uses your location while the app is open to help you add saved places for Place Nudges.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
+		<string>location</string>
 		<string>processing</string>
 		<string>remote-notification</string>
 	</array>

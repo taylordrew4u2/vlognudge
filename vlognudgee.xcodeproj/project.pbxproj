@@ -349,8 +349,8 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "We use your camera to film vlog clips.";
 				INFOPLIST_KEY_NSFocusStatusUsageDescription = "So we don't interrupt you in Sleep or Do Not Disturb.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Post-workout is a great vlog moment.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "So we can trigger nudges when you arrive at places even if the app is backgrounded.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "For location-based nudges like \"just got home.\"";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Enable Background Location for Place Nudges so VlogNudge can remind you to record when you arrive at or leave saved places even while the app is not open.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "VlogNudge uses your location while the app is open to help you add saved places for Place Nudges.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We record audio with your vlog clips.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "So we avoid nudging while driving and detect when you arrive somewhere.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Clips save to a Daily Vlogs album.";
@@ -394,8 +394,8 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "We use your camera to film vlog clips.";
 				INFOPLIST_KEY_NSFocusStatusUsageDescription = "So we don't interrupt you in Sleep or Do Not Disturb.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Post-workout is a great vlog moment.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "So we can trigger nudges when you arrive at places even if the app is backgrounded.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "For location-based nudges like \"just got home.\"";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Enable Background Location for Place Nudges so VlogNudge can remind you to record when you arrive at or leave saved places even while the app is not open.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "VlogNudge uses your location while the app is open to help you add saved places for Place Nudges.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We record audio with your vlog clips.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "So we avoid nudging while driving and detect when you arrive somewhere.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Clips save to a Daily Vlogs album.";

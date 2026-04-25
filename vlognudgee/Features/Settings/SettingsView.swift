@@ -11,6 +11,7 @@ import UserNotifications
 import AVFoundation
 import Photos
 import UIKit
+import CoreLocation
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -225,6 +226,9 @@ struct SettingsView: View {
             NavigationLink("Permissions status") {
                 PermissionsStatusView()
             }
+            NavigationLink("Location / Background Location") {
+                BackgroundLocationSettingsView()
+            }
             NavigationLink("Geofences") {
                 GeofenceManagementView()
             }
@@ -265,6 +269,156 @@ struct SettingsView: View {
         Task {
             await NudgeScheduler.shared.ensureTodayIsScheduled(context: modelContext)
         }
+    }
+}
+
+// MARK: - Background Location Settings
+
+struct BackgroundLocationSettingsView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \Geofence.name) private var geofences: [Geofence]
+    @State private var locationService = LocationService.shared
+
+    var body: some View {
+        List {
+            Section {
+                statusRow
+            } header: {
+                Text("Status")
+            } footer: {
+                Text("Background location is only used for Place Nudges after you turn it on here.")
+            }
+
+            Section("Place Nudges") {
+                Text("VlogNudge can remind you to record when you arrive at or leave saved places, like home, work, or a favorite spot.")
+                    .foregroundStyle(VNColor.textSecondary)
+                Text("To send those reminders when the app is not open, iOS requires Always location permission and background location updates.")
+                    .foregroundStyle(VNColor.textSecondary)
+                Text("Start it with Enable Background Location. Stop it any time with Turn Off Background Location.")
+                    .foregroundStyle(VNColor.textSecondary)
+            }
+
+            Section("Controls") {
+                Toggle("Place Nudges use background location",
+                       isOn: Binding(
+                        get: { locationService.isBackgroundLocationEnabled },
+                        set: { enabled in
+                            if enabled {
+                                enableBackgroundLocation()
+                            } else {
+                                locationService.disableBackgroundLocation()
+                            }
+                        }
+                       ))
+
+                if locationService.authorizationStatus == .notDetermined {
+                    Button("Allow Location While Using App") {
+                        Task {
+                            await locationService.requestWhenInUseAuthorization()
+                        }
+                    }
+                    .foregroundStyle(VNColor.accent)
+                }
+
+                if locationService.authorizationStatus != .authorizedAlways {
+                    Button("Enable Background Location") {
+                        enableBackgroundLocation()
+                    }
+                    .foregroundStyle(VNColor.accent)
+                }
+
+                if locationService.isBackgroundLocationEnabled {
+                    Button("Turn Off Background Location") {
+                        locationService.disableBackgroundLocation()
+                    }
+                    .foregroundStyle(VNColor.destructive)
+                }
+
+                Button("Open iOS Location Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            }
+
+            Section("Review Demo") {
+                Text("App Review can enable the feature here without special hardware. Add the demo place, then enable background location to see the feature become active.")
+                    .foregroundStyle(VNColor.textSecondary)
+                Button("Add demo review geofence") {
+                    addDemoGeofenceIfNeeded()
+                }
+                .foregroundStyle(VNColor.accent)
+                LabeledContent("Saved places") {
+                    Text("\(geofences.count)")
+                        .foregroundStyle(VNColor.textSecondary)
+                }
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .background(VNColor.dominant)
+        .navigationTitle("Background Location")
+        .task {
+            locationService.restoreExplicitBackgroundLocationIfNeeded()
+        }
+    }
+
+    private var statusRow: some View {
+        HStack {
+            Text(statusText)
+            Spacer()
+            Image(systemName: statusIcon)
+                .foregroundStyle(statusColor)
+        }
+    }
+
+    private var statusText: String {
+        if locationService.authorizationStatus == .denied ||
+            locationService.authorizationStatus == .restricted {
+            return "Location permission needed"
+        }
+        if locationService.isBackgroundLocationActive {
+            return "Background location is active"
+        }
+        if locationService.isBackgroundLocationEnabled &&
+            locationService.authorizationStatus != .authorizedAlways {
+            return "Location permission needed"
+        }
+        return "Background location is off"
+    }
+
+    private var statusIcon: String {
+        locationService.isBackgroundLocationActive ? "location.fill" : "location.slash"
+    }
+
+    private var statusColor: Color {
+        locationService.isBackgroundLocationActive ? VNColor.success : VNColor.warning
+    }
+
+    private func enableBackgroundLocation() {
+        locationService.enableBackgroundLocation()
+        refreshGeofences()
+    }
+
+    private func addDemoGeofenceIfNeeded() {
+        if !geofences.contains(where: { $0.name == "App Review Demo Place" }) {
+            let demo = Geofence(
+                name: "App Review Demo Place",
+                latitude: 37.3349,
+                longitude: -122.0090,
+                radius: 200
+            )
+            modelContext.insert(demo)
+            try? modelContext.save()
+        }
+        refreshGeofences()
+    }
+
+    private func refreshGeofences() {
+        let allFences = (try? modelContext.fetch(FetchDescriptor<Geofence>())) ?? []
+        LocationService.shared.refreshGeofences(
+            from: allFences,
+            near: LocationService.shared.currentLocation
+        )
     }
 }
 
