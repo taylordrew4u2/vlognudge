@@ -13,6 +13,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     static let shared = LocationService()
 
     private static let backgroundLocationEnabledKey = "backgroundLocationNudgesEnabled"
+    private static let defaults = UserDefaults(suiteName: AppConstants.appGroupID)
 
     private let manager = CLLocationManager()
     private var shouldRequestAlwaysAfterWhenInUse = false
@@ -160,12 +161,10 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
 
     private static var savedBackgroundLocationEnabled: Bool {
         get {
-            UserDefaults(suiteName: AppConstants.appGroupID)?
-                .bool(forKey: backgroundLocationEnabledKey) ?? false
+            defaults?.bool(forKey: backgroundLocationEnabledKey) ?? false
         }
         set {
-            UserDefaults(suiteName: AppConstants.appGroupID)?
-                .set(newValue, forKey: backgroundLocationEnabledKey)
+            defaults?.set(newValue, forKey: backgroundLocationEnabledKey)
         }
     }
 
