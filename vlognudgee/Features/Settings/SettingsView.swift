@@ -276,8 +276,8 @@ struct SettingsView: View {
 
 struct BackgroundLocationSettingsView: View {
     // Public Apple Park coordinates (positive latitude north, negative longitude west) provide an obvious App Review demo place.
-    private static let appReviewDemoLatitude: CLLocationDegrees = 37.3349
-    private static let appReviewDemoLongitude: CLLocationDegrees = -122.0090
+    private static let demoLatitude: CLLocationDegrees = 37.3349
+    private static let demoLongitude: CLLocationDegrees = -122.0090
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Geofence.name) private var geofences: [Geofence]
@@ -412,8 +412,8 @@ struct BackgroundLocationSettingsView: View {
         if !geofences.contains(where: { $0.name == "App Review Demo Place" }) {
             let demo = Geofence(
                 name: "App Review Demo Place",
-                latitude: Self.appReviewDemoLatitude,
-                longitude: Self.appReviewDemoLongitude,
+                latitude: Self.demoLatitude,
+                longitude: Self.demoLongitude,
                 radius: 200
             )
             modelContext.insert(demo)
