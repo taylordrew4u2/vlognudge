@@ -41,7 +41,7 @@ struct VlogNudgeApp: App {
 
                     // Start context services that observe changes in the background
                     MotionService.shared.start()
-                    LocationService.shared.start()
+                    LocationService.shared.restoreExplicitBackgroundLocationIfNeeded()
                     HealthService.shared.startObservingWorkouts()
                     FocusService.shared.refresh()
 

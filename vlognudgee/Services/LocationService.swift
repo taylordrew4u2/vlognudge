@@ -12,27 +12,77 @@ import Observation
 final class LocationService: NSObject, CLLocationManagerDelegate {
     static let shared = LocationService()
 
+    private static let backgroundLocationEnabledKey = "backgroundLocationNudgesEnabled"
+
     private let manager = CLLocationManager()
     private var currentAuthorizationStatus: CLAuthorizationStatus = .notDetermined
+    private var shouldRequestAlwaysAfterWhenInUse = false
+    private(set) var isBackgroundLocationEnabled = false
+    private(set) var isBackgroundLocationActive = false
+    private(set) var authorizationStatus: CLAuthorizationStatus = .notDetermined
+    private(set) var currentLocation: CLLocation?
 
     private override init() {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        manager.allowsBackgroundLocationUpdates = true
-        manager.pausesLocationUpdatesAutomatically = false
+        manager.allowsBackgroundLocationUpdates = false
+        manager.pausesLocationUpdatesAutomatically = true
+        currentAuthorizationStatus = manager.authorizationStatus
+        authorizationStatus = manager.authorizationStatus
+        isBackgroundLocationEnabled = Self.savedBackgroundLocationEnabled
+    }
+
+    func requestWhenInUseAuthorization() async {
+        manager.requestWhenInUseAuthorization()
     }
 
     func requestAlwaysAuthorization() async {
         manager.requestAlwaysAuthorization()
     }
 
-    func start() {
-        manager.startMonitoringSignificantLocationChanges()
+    func enableBackgroundLocation() {
+        isBackgroundLocationEnabled = true
+        Self.savedBackgroundLocationEnabled = true
+        switch manager.authorizationStatus {
+        case .notDetermined:
+            shouldRequestAlwaysAfterWhenInUse = true
+            manager.requestWhenInUseAuthorization()
+        case .authorizedWhenInUse:
+            manager.requestAlwaysAuthorization()
+        default:
+            break
+        }
+        updateBackgroundLocationState()
     }
 
-    func stop() {
+    func disableBackgroundLocation() {
+        isBackgroundLocationEnabled = false
+        Self.savedBackgroundLocationEnabled = false
+        stop()
+    }
+
+    func restoreExplicitBackgroundLocationIfNeeded() {
+        isBackgroundLocationEnabled = Self.savedBackgroundLocationEnabled
+        updateBackgroundLocationState()
+    }
+
+    private func start() {
+        guard isBackgroundLocationEnabled,
+              manager.authorizationStatus == .authorizedAlways else { return }
+        manager.allowsBackgroundLocationUpdates = true
+        manager.pausesLocationUpdatesAutomatically = true
+        manager.startMonitoringSignificantLocationChanges()
+        isBackgroundLocationActive = true
+    }
+
+    private func stop() {
         manager.stopMonitoringSignificantLocationChanges()
+        for region in manager.monitoredRegions {
+            manager.stopMonitoring(for: region)
+        }
+        manager.allowsBackgroundLocationUpdates = false
+        isBackgroundLocationActive = false
     }
 
     // MARK: - Geofence registration
@@ -40,6 +90,12 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
     /// Register geofences from SwiftData. iOS limits us to ~20 regions per app,
     /// so we pick the ones nearest the current location.
     func refreshGeofences(from geofences: [Geofence], near location: CLLocation?) {
+        guard isBackgroundLocationEnabled,
+              manager.authorizationStatus == .authorizedAlways else {
+            stop()
+            return
+        }
+
         // Stop monitoring all current regions
         for region in manager.monitoredRegions {
             manager.stopMonitoring(for: region)
@@ -66,15 +122,20 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
             region.notifyOnExit = fence.nudgeOnExit
             manager.startMonitoring(for: region)
         }
+        start()
     }
 
     // MARK: - Delegate
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         currentAuthorizationStatus = manager.authorizationStatus
-        if manager.authorizationStatus == .authorizedAlways {
-            start()
+        authorizationStatus = manager.authorizationStatus
+        if shouldRequestAlwaysAfterWhenInUse,
+           manager.authorizationStatus == .authorizedWhenInUse {
+            shouldRequestAlwaysAfterWhenInUse = false
+            manager.requestAlwaysAuthorization()
         }
+        updateBackgroundLocationState()
     }
 
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
@@ -91,8 +152,28 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         // Could extend here: compare distance to all known geofences, and if > threshold
         // fire a "new_location" trigger.
         guard let location = locations.last else { return }
+        currentLocation = location
         Task {
             await handleSignificantLocationChange(location: location)
+        }
+    }
+
+    private func updateBackgroundLocationState() {
+        if isBackgroundLocationEnabled, manager.authorizationStatus == .authorizedAlways {
+            start()
+        } else {
+            stop()
+        }
+    }
+
+    private static var savedBackgroundLocationEnabled: Bool {
+        get {
+            UserDefaults(suiteName: AppConstants.appGroupID)?
+                .bool(forKey: backgroundLocationEnabledKey) ?? false
+        }
+        set {
+            UserDefaults(suiteName: AppConstants.appGroupID)?
+                .set(newValue, forKey: backgroundLocationEnabledKey)
         }
     }
 
