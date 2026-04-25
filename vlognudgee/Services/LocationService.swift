@@ -67,6 +67,7 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
             DispatchQueue.main.async { self.start() }
             return
         }
+        // CLLocationManager updates stay on the main thread with observable UI state.
         guard isBackgroundLocationEnabled,
               authorizationStatus == .authorizedAlways else { return }
         manager.allowsBackgroundLocationUpdates = true
@@ -188,7 +189,11 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
             defaults?.bool(forKey: backgroundLocationEnabledKey) ?? false
         }
         set {
-            defaults?.set(newValue, forKey: backgroundLocationEnabledKey)
+            guard let defaults else {
+                assertionFailure("App Group UserDefaults unavailable for background location setting.")
+                return
+            }
+            defaults.set(newValue, forKey: backgroundLocationEnabledKey)
         }
     }
 
