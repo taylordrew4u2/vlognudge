@@ -276,8 +276,8 @@ struct SettingsView: View {
 
 struct BackgroundLocationSettingsView: View {
     // Public Apple Park coordinates (positive latitude north, negative longitude west) provide an obvious App Review demo place.
-    private static let demoLatitude: CLLocationDegrees = 37.3349
-    private static let demoLongitude: CLLocationDegrees = -122.0090
+    private static let demoLatitude: CLLocationDegrees = 37.3349 // 1 Apple Park Way, Cupertino, CA
+    private static let demoLongitude: CLLocationDegrees = -122.0090 // 1 Apple Park Way, Cupertino, CA
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Geofence.name) private var geofences: [Geofence]
