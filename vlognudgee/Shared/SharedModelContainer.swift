@@ -9,6 +9,7 @@
 //
 
 import Foundation
+import os
 import SwiftData
 
 enum SharedModelContainer {
@@ -37,7 +38,7 @@ enum SharedModelContainer {
         } catch {
             // If the store is incompatible, delete and recreate rather than crashing.
             // Acceptable pre-launch; replace with proper migration once shipping.
-            print("ModelContainer init failed: \(error). Resetting store.")
+            Logger.persistence.error("ModelContainer init failed: \(error.localizedDescription, privacy: .public). Resetting store.")
             try? FileManager.default.removeItem(at: groupContainerURL)
             do {
                 return try ModelContainer(for: schema, configurations: [config])

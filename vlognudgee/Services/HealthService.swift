@@ -5,6 +5,7 @@
 
 import Foundation
 import HealthKit
+import os
 import SwiftData
 
 @MainActor
@@ -26,7 +27,7 @@ final class HealthService {
                 read: [workoutType]
             )
         } catch {
-            print("HealthKit auth error: \(error)")
+            Logger.health.error("HealthKit auth error: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -37,7 +38,7 @@ final class HealthService {
         // Enable background delivery
         healthStore.enableBackgroundDelivery(for: workoutType, frequency: .immediate) { success, error in
             if let error = error {
-                print("Background delivery error: \(error)")
+                Logger.health.error("Background delivery error: \(error.localizedDescription, privacy: .public)")
             }
         }
 

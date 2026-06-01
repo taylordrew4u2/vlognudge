@@ -5,6 +5,7 @@
 
 import Foundation
 import EventKit
+import os
 import SwiftData
 
 @MainActor
@@ -22,7 +23,7 @@ final class CalendarService {
                 _ = try await store.requestAccess(to: .event)
             }
         } catch {
-            print("Calendar access error: \(error)")
+            Logger.calendar.error("Calendar access error: \(error.localizedDescription, privacy: .public)")
         }
     }
 

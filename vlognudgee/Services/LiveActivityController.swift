@@ -5,6 +5,7 @@
 
 import Foundation
 import ActivityKit
+import os
 import SwiftData
 
 @MainActor
@@ -55,7 +56,7 @@ final class LiveActivityController {
             )
             currentActivity = activity
         } catch {
-            print("Failed to start Live Activity: \(error)")
+            Logger.liveActivity.error("Failed to start Live Activity: \(error.localizedDescription, privacy: .public)")
         }
     }
 

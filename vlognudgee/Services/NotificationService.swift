@@ -9,6 +9,7 @@
 //
 
 import Foundation
+import os
 import UserNotifications
 import UIKit
 
@@ -35,7 +36,7 @@ final class NotificationService {
             if granted { registerCategories() }
             return granted
         } catch {
-            print("Notification auth error: \(error)")
+            Logger.notifications.error("Notification auth error: \(error.localizedDescription, privacy: .public)")
             return false
         }
     }
@@ -127,7 +128,7 @@ final class NotificationService {
         do {
             try await UNUserNotificationCenter.current().add(request)
         } catch {
-            print("Failed to schedule nudge: \(error)")
+            Logger.notifications.error("Failed to schedule nudge: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -161,7 +162,7 @@ final class NotificationService {
         do {
             try await UNUserNotificationCenter.current().add(request)
         } catch {
-            print("Failed to fire immediate nudge: \(error)")
+            Logger.notifications.error("Failed to fire immediate nudge: \(error.localizedDescription, privacy: .public)")
         }
     }
 

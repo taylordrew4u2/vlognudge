@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import AVFoundation
+import os
 
 struct CaptureView: View {
     @Environment(\.dismiss) private var dismiss
@@ -262,12 +263,12 @@ struct CaptureView: View {
                         dismiss()
                     }
                 } catch {
-                    print("Failed to save clip: \(error)")
+                    Logger.capture.error("Failed to save clip: \(error.localizedDescription, privacy: .public)")
                     dismiss()
                 }
             }
         case .failure(let error):
-            print("Recording failed: \(error)")
+            Logger.capture.error("Recording failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 

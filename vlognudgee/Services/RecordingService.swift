@@ -9,6 +9,7 @@
 import Foundation
 import AVFoundation
 import Observation
+import os
 import UIKit
 
 @Observable
@@ -82,7 +83,7 @@ final class RecordingService: NSObject, @unchecked Sendable {
                     videoDeviceInput = input
                 }
             } catch {
-                print("Video device setup failed: \(error.localizedDescription)")
+                Logger.recording.error("Video device setup failed: \(error.localizedDescription, privacy: .public)")
             }
         }
 
@@ -95,7 +96,7 @@ final class RecordingService: NSObject, @unchecked Sendable {
                     audioDeviceInput = input
                 }
             } catch {
-                print("Audio device setup failed: \(error.localizedDescription)")
+                Logger.recording.error("Audio device setup failed: \(error.localizedDescription, privacy: .public)")
             }
         }
 

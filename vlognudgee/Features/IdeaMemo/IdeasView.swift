@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import AVFoundation
+import os
 
 struct IdeasView: View {
     @Environment(\.modelContext) private var modelContext
@@ -153,7 +154,7 @@ struct IdeaRow: View {
             player?.play()
             isPlaying = true
         } catch {
-            print("Playback error: \(error)")
+            Logger.ideas.error("Playback error: \(error.localizedDescription, privacy: .public)")
         }
     }
 }
@@ -259,7 +260,7 @@ struct IdeaRecorderView: View {
                 if elapsed >= 30 { stopAndSave() }
             }
         } catch {
-            print("Recorder error: \(error)")
+            Logger.ideas.error("Recorder error: \(error.localizedDescription, privacy: .public)")
         }
     }
 
