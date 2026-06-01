@@ -14,6 +14,7 @@
 import Foundation
 import SwiftData
 import BackgroundTasks
+import os
 import UserNotifications
 import WidgetKit
 
@@ -130,7 +131,7 @@ final class NudgeScheduler {
         )
 
         guard decision.shouldFire else {
-            print("Context trigger \(reason) suppressed. Score: \(decision.score), blocks: \(decision.blockReasons)")
+            Logger.scheduler.debug("Context trigger \(reason, privacy: .public) suppressed. Score: \(decision.score), blocks: \(decision.blockReasons.joined(separator: ", "), privacy: .public)")
             return
         }
 
@@ -231,7 +232,7 @@ final class NudgeScheduler {
         if recentDismissals >= 3 {
             settings.cooldownUntil = Date().addingTimeInterval(2 * 3600)
             try? context.save()
-            print("User dismissed 3 nudges in 2hr — auto cool-down for 2hr")
+            Logger.scheduler.info("User dismissed 3 nudges in 2hr — auto cool-down for 2hr")
         }
     }
 
@@ -239,7 +240,7 @@ final class NudgeScheduler {
         let until = Date().addingTimeInterval(60 * 60)
         await NotificationService.shared.cancelNudges(after: Date())
         // Re-schedule from the "until" time onward next time scheduler runs
-        print("Skipping nudges for 1 hour (until \(until))")
+        Logger.scheduler.info("Skipping nudges for 1 hour (until \(String(describing: until), privacy: .public))")
     }
 
     func logNudgeResult(triggerReason: String, filmed: Bool) async {
@@ -310,7 +311,7 @@ final class NudgeScheduler {
         do {
             try BGTaskScheduler.shared.submit(request)
         } catch {
-            print("Failed to schedule BG refresh: \(error)")
+            Logger.scheduler.error("Failed to schedule BG refresh: \(error.localizedDescription, privacy: .public)")
         }
     }
 
