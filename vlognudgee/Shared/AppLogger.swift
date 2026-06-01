@@ -9,6 +9,7 @@
 //  legible while developing.
 //
 
+import Foundation
 import os
 
 extension Logger {
