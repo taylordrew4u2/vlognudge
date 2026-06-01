@@ -3,7 +3,7 @@
 //  vlog
 //
 //  Live Activity lock screen banner and Dynamic Island.
-//  Uses VlogNudgeActivityAttributes mirrored from the main app.
+//  Uses the shared VlogNudgeActivityAttributes (see Shared/).
 //
 
 import ActivityKit
@@ -11,34 +11,8 @@ import AppIntents
 import WidgetKit
 import SwiftUI
 
-// IMPORTANT: Keep in sync with LiveActivityAttributes.swift in the main app.
-// TODO: Share via target membership instead of duplicating.
-struct VlogNudgeActivityAttributes: ActivityAttributes {
-    public typealias ContentState = State
-
-    public struct State: Codable, Hashable {
-        var clipsToday: Int
-        var targetClipsToday: Int
-        var nextNudgeAt: Date?
-        var lastClipAt: Date?
-        var progressColor: ProgressColor
-
-        enum ProgressColor: String, Codable {
-            case green
-            case yellow
-            case orange
-        }
-
-        var progressFraction: Double {
-            guard targetClipsToday > 0 else { return 0 }
-            return min(1.0, Double(clipsToday) / Double(targetClipsToday))
-        }
-    }
-
-    var dayKey: String
-    var windowStart: Date
-    var windowEnd: Date
-}
+// VlogNudgeActivityAttributes is defined once in Shared/ and compiled into
+// both this extension and the main app.
 
 // Widget-local palette — keep in sync with VNColor in DesignTokens.swift
 private enum WidgetColor {

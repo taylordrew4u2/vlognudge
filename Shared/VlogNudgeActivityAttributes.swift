@@ -1,9 +1,10 @@
 //
-//  LiveActivityAttributes.swift
-//  VlogNudge + VlogNudgeWidgets (add to both targets)
+//  VlogNudgeActivityAttributes.swift
+//  Shared (vlognudgee + vlogExtension)
 //
-//  The shape of data the Live Activity consumes. Must be in both
-//  the main app target AND the widget extension target.
+//  The shape of data the Live Activity consumes. Defined once here and
+//  compiled into both the app and the widget extension via shared target
+//  membership, so the two targets can never drift out of sync.
 //
 
 import ActivityKit
