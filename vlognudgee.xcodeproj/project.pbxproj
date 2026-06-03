@@ -78,6 +78,11 @@
 			path = vlognudgee;
 			sourceTree = "<group>";
 		};
+		BA00000000000000000000A1 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +120,7 @@
 				BA39EF772F99449600BC11D4 /* vlogExtension.entitlements */,
 				BAF19BB92F97E2C90087AC0F /* vlognudgee */,
 				BA4339572F9854F700185CA3 /* vlog */,
+				BA00000000000000000000A1 /* Shared */,
 				BA4339522F9854F700185CA3 /* Frameworks */,
 				BAF19BB82F97E2C90087AC0F /* Products */,
 			);
@@ -146,6 +152,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				BA4339572F9854F700185CA3 /* vlog */,
+				BA00000000000000000000A1 /* Shared */,
 			);
 			name = vlogExtension;
 			packageProductDependencies = (
@@ -170,6 +177,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				BAF19BB92F97E2C90087AC0F /* vlognudgee */,
+				BA00000000000000000000A1 /* Shared */,
 			);
 			name = vlognudgee;
 			packageProductDependencies = (
