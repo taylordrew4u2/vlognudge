@@ -1,237 +1,116 @@
-# VlogNudge — Xcode Setup Guide
+# VlogNudge
 
-ADHD-aware iOS app for capturing day-in-the-life vlog clips, built to feed a CapCut editing workflow.
+**An ADHD-aware iOS app that nudges you to capture day-in-the-life vlog clips — at the right moments, never the annoying ones.**
 
-Stack: iOS 17.0 min · Swift 5.9 · SwiftUI · SwiftData + CloudKit · ActivityKit · WidgetKit · AppIntents
+VlogNudge watches lightweight, on-device context signals (location, motion, calendar, workouts, Focus, time of day) and decides *when* a short "film a clip" reminder is actually welcome. Clips land in a dedicated Photos album ready for a CapCut editing workflow, and a Live Activity keeps the day's pace glanceable on the Lock Screen.
+
+`iOS 17+` · `Swift` · `SwiftUI` · `SwiftData + CloudKit` · `ActivityKit` · `WidgetKit` · `App Intents` · `BackgroundTasks`
 
 ---
 
-## Quick start
+## Engineering highlights
 
-```bash
-open vlognudgee.xcodeproj
-```
+- **A pure, deterministic nudge engine.** [`NudgeScorer`](vlognudgee/Services/NudgeScorer.swift) is a side-effect-free function — `(context, settings, history) → decision` — that's trivial to reason about and test. Scheduling, notifications, and persistence are kept strictly separate from the decision logic.
+- **Context-aware, not spammy.** Layered *hard blocks* (driving, on a call, Focus mode, quiet hours, cool-downs) gate everything; weighted *positive signals* (arriving somewhere, a meeting just ended, a long gap since the last clip) compete against a user-set sensitivity threshold.
+- **Reliable when suspended.** The day's nudges are pre-scheduled as local notifications — the dependable backbone — while `BGAppRefreshTask` only extends the queue into tomorrow. The app never relies on being awake.
+- **Live Activity + widgets** driven by a single shared state type compiled into both the app and the widget extension via shared target membership, so the two can't drift.
+- **Privacy-first.** All context evaluation happens on device; user data syncs through the user's own private CloudKit database. No backend, no third-party SDKs.
+- **Structured logging** via a centralized `os.Logger` per subsystem — no stray `print()`.
 
-The main app target (`vlognudgee`) is wired up and ready to build. In Xcode:
+## How the nudge engine decides
 
-1. Signing & Capabilities → set your **Team**.
-2. Build and run on a real device (Live Activities, HealthKit, location, Focus all need one).
+Every potential nudge moment is scored against the user's current context:
 
-The project uses Xcode's file-system synchronized folders, so every `.swift` file under `vlognudgee/` is compiled automatically — drop new files in the right folder and they're included.
+**Hard blocks** — any one suppresses the nudge entirely:
+> quiet hours · outside the active window · "bad day" mute · cool-down after repeated dismissals · driving (CoreMotion `automotive`) · on a call · a blocking Focus mode · minimum gap since the last nudge · filmed within the last 30 min
 
-## Full manual-setup reference (historical — you don't need this)
+**Positive signals** — summed and compared to a sensitivity threshold derived from the chosen frequency:
 
-### 1. Create the Xcode project
-
-1. Xcode → File → New → Project → **iOS → App**
-2. Settings:
-   - Product Name: **VlogNudge**
-   - Team: your Apple Developer team
-   - Organization Identifier: `com.taylordrew`
-   - Interface: **SwiftUI**
-   - Language: **Swift**
-   - Storage: **SwiftData**
-   - Host in CloudKit: **✓ checked**
-3. Deployment Target: **iOS 17.0**, iPhone + iPad
-
-## 2. Capabilities on the main app target
-
-Signing & Capabilities → `+ Capability`:
-
-- **App Groups** — `group.com.taylordrew.vlognudge`
-- **iCloud** → CloudKit, container `iCloud.com.taylordrew.vlognudge`
-- **Push Notifications**
-- **Background Modes** — Location updates, Background fetch, Background processing
-- **HealthKit**
-- **Family Controls** (request entitlement from Apple; if denied, set `useScreenTime = false` default and skip Screen Time features)
-
-## 3. Add extension targets
-
-You need **four** extension targets besides the main app:
-
-### 3a. Widget Extension
-- File → New → Target → **Widget Extension**
-- Name: `VlogNudgeWidgets`
-- ✓ **Include Live Activity**
-- Add App Groups capability (same ID)
-
-### 3b. Notification Service Extension
-- File → New → Target → **Notification Service Extension**
-- Name: `VlogNudgeNotificationService`
-- Add App Groups capability
-
-### 3c. Device Activity Monitor Extension (optional — only if using Screen Time)
-- File → New → Target → **Device Activity Monitor Extension**
-- Name: `VlogNudgeDeviceActivity`
-- Add App Groups capability
-
-### 3d. (Skip for now) App Intents Extension
-The intents are defined in the main app and shared with the widget target via target membership — no separate extension needed for v1.
-
-## 4. Info.plist keys (main app target)
-
-| Key | Value |
+| Signal | Weight |
 |---|---|
-| NSCameraUsageDescription | We use your camera to film vlog clips. |
-| NSMicrophoneUsageDescription | We record audio with your vlog clips. |
-| NSPhotoLibraryAddUsageDescription | Clips save to a Daily Vlogs album. |
-| NSMotionUsageDescription | So we avoid nudging while driving and detect when you arrive somewhere. |
-| NSLocationWhenInUseUsageDescription | VlogNudge uses your location while the app is open to help you add saved places for Place Nudges. |
-| NSLocationAlwaysAndWhenInUseUsageDescription | Enable Background Location for Place Nudges so VlogNudge can remind you to record when you arrive at or leave saved places even while the app is not open. |
-| NSCalendarsUsageDescription | We skip nudges during your events and nudge right after they end. |
-| NSCalendarsFullAccessUsageDescription | Same — reads upcoming and just-ended events. |
-| NSHealthShareUsageDescription | Post-workout is a great vlog moment. |
-| NSFocusStatusUsageDescription | So we don't interrupt you in Sleep or Do Not Disturb. |
+| Geofence transition (arrived at / left a saved place) | +3 |
+| Became stationary / just arrived | +2 |
+| A calendar event just ended | +2 |
+| Long gap since the last clip / no clips past the window midpoint | +2 |
+| An event starting soon | +1 |
+| Device is charging | +1 |
 
-Also:
-- **Permitted background task scheduler identifiers** (array): add `com.taylordrew.vlognudge.refresh`
-- **URL Types** → URL Schemes → add `vlognudge` so widget deep links work
+A nudge fires only when **no hard block applies** *and* the **score clears the threshold** — then [`PromptGenerator`](vlognudgee/Services/PromptGenerator.swift) writes context-appropriate copy ("You just got home — quick clip?").
 
-## 5. Drop in source files
+## Architecture
 
-Copy the folders into Xcode matching their structure. Most files belong to one target; a few need **multiple target memberships**:
-
-**Files that need membership in MULTIPLE targets** (use Xcode's File Inspector → Target Membership):
-
-| File | Main app | Widget | Notification Svc | Device Activity |
-|---|---|---|---|---|
-| `Shared/AppConstants.swift` | ✓ | ✓ | ✓ | ✓ |
-| `Services/LiveActivityAttributes.swift` | ✓ | ✓ | | |
-| `Intents/AppIntents.swift` | ✓ | ✓ | | |
-
-Everything else goes in the target that matches its folder.
-
-## 6. Custom notification sound
-
-Add `NudgeSound.caf` to the main app bundle. Keep it short (~0.4s) and distinctive. To create one:
-
-```bash
-afconvert input.wav -f caff -d ima4 NudgeSound.caf
-```
-
-Drag into Xcode with "Copy items if needed" checked and main app target selected.
-
-## 7. First build
-
-1. Build + run on a real device (simulator has limits with Live Activities, HealthKit, Focus, location)
-2. Walk through onboarding — camera/mic/photos/notifications are required; motion/location/calendar/health are optional but strongly recommended
-3. On Today screen: tap **Record now** — confirm a clip saves to the Photos "Daily Vlogs" album
-4. Go to Settings → **Send test notification** — confirm custom sound plays and the **Record** action button opens the capture screen directly
-5. Add a geofence (Settings → Geofences) — try your home
-6. Leave phone alone — Lock Screen should show the Live Activity with next nudge time, the widget should show clip count
-
-## 8. What's in this scaffold
-
-### Main app target (`VlogNudge/`)
+Layered and single-responsibility, split across two build targets.
 
 ```
-VlogNudgeApp.swift                  — entry, notification delegate wiring
-AppState.swift                      — observable app state, deep link routing
-RootView.swift                      — tabs + onboarding gate + URL schemes
+vlognudgee/                       Main app target (iOS 17+)
+├── VlogNudgeApp.swift            App entry + notification-delegate wiring
+├── AppState.swift                Observable app state, deep-link routing
+├── RootView.swift                Tab shell, onboarding gate, URL handling
+├── Models/Models.swift           SwiftData @Models: Clip, VlogAlbum, NudgeEvent,
+│                                   Geofence, IdeaMemo, UserSettings (+ ContextSnapshot)
+├── Services/                     One responsibility each
+│   ├── NudgeScorer.swift             Pure "should we nudge?" decision function
+│   ├── NudgeScheduler.swift          Orchestrator: rolling notification queue + BG refresh
+│   ├── PromptGenerator.swift         Context-aware prompt copy
+│   ├── NotificationService.swift     Categories, action buttons, scheduling
+│   ├── NotificationDelegate.swift    Action-button routing
+│   ├── LiveActivityController.swift  Daily Live Activity lifecycle
+│   ├── RecordingService.swift        AVFoundation capture, vertical lock
+│   ├── PhotosService.swift           "Daily Vlogs" album management
+│   ├── LocationService.swift         Geofences + significant-location changes
+│   ├── MotionService.swift           CoreMotion activity detection
+│   ├── CalendarService.swift         EventKit event-end / pre-event triggers
+│   ├── HealthService.swift           Workout-end observer (HealthKit)
+│   └── FocusService.swift            Focus-mode awareness
+├── Features/                     SwiftUI screens
+│   ├── Today/ · Home/ · Capture/ · Timeline/ · IdeaMemo/ · Albums/ · Onboarding/
+│   └── Settings/                     Settings · Geofence editor · Nudge analytics
+├── Intents/AppIntents.swift      Record · Not-now · Skip-hour · Capture-idea
+└── Shared/                       App-internal helpers
+    ├── AppConstants.swift · AppLogger.swift · DateHelpers.swift
+    └── DesignTokens.swift · ColorHex.swift · SharedModelContainer.swift
 
-Shared/
-├── AppConstants.swift              — shared IDs (include in all targets)
-├── DateHelpers.swift               — day keys, window math
-└── SharedModelContainer.swift      — SwiftData+CloudKit container singleton
+vlog/                             Widget extension target (iOS 18+)
+├── vlogLiveActivity.swift        Live Activity + Dynamic Island
+├── vlog.swift                    Home-screen / Lock-screen widgets
+├── vlogControl.swift             Control Center / Lock-screen control
+├── AppIntent.swift               Widget-side intents
+└── vlogBundle.swift              Widget bundle entry
 
-Models/
-└── Models.swift                    — Clip, NudgeEvent, Geofence, IdeaMemo,
-                                      UserSettings, ContextSnapshot,
-                                      NudgeFrequency, OrientationLock
+Shared/                           Compiled into BOTH targets
+└── VlogNudgeActivityAttributes.swift   Single source of truth for Live Activity state
 
-Services/
-├── NotificationService.swift       — categories, actions, scheduling
-├── NotificationDelegate.swift      — action button routing
-├── NudgeScorer.swift               — pure scoring function
-├── NudgeScheduler.swift            — orchestrator, rolling queue
-├── PromptGenerator.swift           — contextual prompt copy
-├── LiveActivityAttributes.swift    — shared shape (ALSO in widget target)
-├── LiveActivityController.swift    — daily Live Activity
-├── RecordingService.swift          — AVFoundation, vertical lock
-├── PhotosService.swift             — Daily Vlogs album
-├── MotionService.swift             — CoreMotion activity detection
-├── LocationService.swift           — geofences + significant location
-├── CalendarService.swift           — EventKit event-end triggers
-├── HealthService.swift             — workout-end observer
-├── WeatherService.swift            — WeatherKit conditions
-├── FocusService.swift              — Focus mode read
-└── ScreenTimeService.swift         — Family Controls (optional)
-
-Intents/
-└── AppIntents.swift                — RecordClip, NotNow, SkipHour, CaptureIdea
-
-Features/
-├── Today/TodayView.swift           — home screen
-├── Capture/CaptureView.swift       — full-screen camera UI
-├── Timeline/TimelineView.swift     — calendar + clip list + preview
-├── IdeaMemo/IdeasView.swift        — voice memo list + recorder
-├── Settings/
-│   ├── SettingsView.swift
-│   ├── GeofenceManagementView.swift — list + map editor
-│   └── NudgeAnalyticsView.swift     — conversion-rate charts
-└── Onboarding/OnboardingFlow.swift
+widget/                           Design source for the widget surfaces — React/JSX
+                                   mockups + handoff spec (design reference, not built)
 ```
 
-> Extension targets (widgets, notification service, device activity) are not committed. When you're ready to add them, create the targets in Xcode and point them at fresh folders under the project directory — the earlier scaffold was removed to keep the repo to just what the `vlognudgee` target actually compiles.
+The project uses Xcode's **file-system synchronized folders**: every file under a target's folder is compiled automatically, so adding a file is just dropping it in the right directory.
 
-## 9. Known gotchas
+## Build & run
 
-- **Live Activities are flaky in Simulator.** Test on device.
-- **Family Controls entitlement** is gated by Apple. Budget waiting time or remove the capability and set `useScreenTime = false` default — the rest of the app works fine without it.
-- **BGAppRefreshTask** runs when iOS wants it to, not when you ask. The scheduled notifications are the reliable backbone; background refresh just extends the queue into tomorrow.
-- **Geofence monitoring** has a ~20-region limit. `LocationService.refreshGeofences` trims to 18 nearest.
-- **WeatherKit** needs paid dev program enrollment + capability. Cheap at this scale.
-- **SwiftData + CloudKit** requires every `@Model` property to have a default value. The scaffold already does this.
-- **Significant location changes are slow** by design (battery). Expect minutes, not seconds.
+**Requirements:** a recent Xcode, and a **real device** — Live Activities, HealthKit, location, and Focus don't work fully in the Simulator.
 
-## 10. Quick fixes if something doesn't compile
+1. `open vlognudgee.xcodeproj`
+2. **Signing & Capabilities → Team:** select your own Apple Developer team (the project pins a specific `DEVELOPMENT_TEAM`).
+3. If building under your own account, point the **App Group** and **iCloud/CloudKit container** IDs at ones your team owns — they live in [`AppConstants.swift`](vlognudgee/Shared/AppConstants.swift) and the target capabilities.
+4. Build and run on device, then walk through onboarding (camera/mic/photos/notifications are required; motion/location/calendar/health are optional but make the nudges smart).
 
-- **Crash on launch re: ModelContainer** → verify App Group ID matches exactly in capabilities *and* in `AppConstants.swift`
-- **Notifications don't show custom sound** → verify `NudgeSound.caf` is in the main app bundle and target membership is correct
-- **Widget / notification-service / device-activity builds fail** → the repo no longer ships scaffolding for those targets. Add each extension via **File → New → Target** and include `AppConstants.swift` (all extensions), `LiveActivityAttributes.swift` (widget), and `AppIntents.swift` (widget) via target membership.
+More detail — full capability list, permission strings, and Xcode troubleshooting — is in [`docs/SETUP.md`](docs/SETUP.md).
 
-## 11. Source-control and debugger errors
+## Design notes
 
-### "The source control operation failed because the revision X could not be found." / "The repository could not be found."
+A few decisions worth calling out:
 
-These are Xcode-side errors — they mean Xcode's local working copy can't resolve a SHA or remote URL it has cached. The revision almost always does exist on GitHub; Xcode just hasn't fetched it, or its xcuserdata cache is pointing at a stale ref.
+- **Decision logic is a pure function.** Keeping `NudgeScorer` free of side effects makes the "why did/didn't it nudge?" question answerable from inputs alone.
+- **Local notifications are the source of truth**, not background execution. Background refresh is treated as best-effort top-up, not a dependency.
+- **SwiftData + CloudKit constraints are respected** — every `@Model` property has a default value (a hard requirement for the CloudKit mirror), and the container recreates a fresh store rather than crashing on an incompatible schema during development.
+- **No punishment-red in the UI.** Pace tops out at a warm orange — a deliberate, ADHD-friendly tone choice documented in the [widget handoff spec](widget/HANDOFF.md).
 
-Fix on your machine (not the repo):
+## Roadmap
 
-```bash
-cd <repo>
-git fetch origin
-git status                 # confirm branch + upstream
-git log -1 origin/main     # confirm main is at the expected SHA
-```
+Natural extensions beyond the current build:
 
-Then in Xcode:
-
-1. **Source Control → Fetch Changes** (File menu) to re-pull refs.
-2. Quit Xcode fully.
-3. Delete Xcode's per-user state for this project: `rm -rf vlognudgee.xcodeproj/xcuserdata` — safe, it's gitignored.
-4. Clear DerivedData for this project: `rm -rf ~/Library/Developer/Xcode/DerivedData/vlognudgee-*`.
-5. Reopen `vlognudgee.xcodeproj`.
-
-If "The repository could not be found" persists, check `git remote -v` — the origin URL must be reachable (network, SSH key loaded in `ssh-agent`, GitHub auth in **Xcode → Settings → Accounts**). A renamed GitHub repo or a switched org account is a common cause.
-
-### "LLDB RPC Server has exited" (IDEDebugSessionErrorDomain code 28)
-
-This comes from the debugger, not source control, and usually means the app itself has gone away. Check in order:
-
-1. **Console.app → your device → filter on the process name** for a crash log. Code 28 often surfaces after the app hit `fatalError` or was killed by watchdog/jetsam.
-2. **Wireless debugging drop** — the iPhone log showed `device_isWireless = 1`. Tether via cable and retry. Wi-Fi debugging commonly disconnects over long runs.
-3. **Signing / provisioning mismatch** — `vlognudgee.xcodeproj` hard-codes `DEVELOPMENT_TEAM = R44WG942GS`. If that isn't your team, change it in **Signing & Capabilities**. Mismatches on App Groups / CloudKit / HealthKit entitlements often manifest as a silent launch failure that Xcode reports as the LLDB detach.
-4. **CloudKit container not linked to your team** — `SharedModelContainer.shared` uses `cloudKitDatabase: .private("iCloud.com.taylordrew.vlognudge")` and calls `fatalError` if the container can't initialize. Either enable the container for your team in the Developer portal, or temporarily swap `.private(…)` for `.none` while bootstrapping.
-
-## 12. Next steps after shipping v1
-
-The app is complete as a v1 but these are natural extensions:
-
-- **Calibration mode** — first 3 days observe behavior and auto-tune scoring weights based on which nudges convert
-- **True iPad Handoff routing** — CloudKit gets data cross-device; nudge-targeting-by-active-device needs NSUbiquitousKeyValueStore heartbeat
-- **Watch app** (you said no watch — skipping)
-- **CapCut share extension** once CapCut exposes a URL scheme for multi-asset import
-- **Idea memo transcription** via SFSpeechRecognizer (you said skip for v1)
-- **Solar/golden hour trigger** via Solar position calculation (stub exists in scorer)
-- **Co-host mode** — pair with another user for gentle accountability presence
+- **Calibration mode** — observe the first few days and auto-tune scoring weights toward the nudges that actually convert.
+- **Idea-memo transcription** via `SFSpeechRecognizer`.
+- **Golden-hour trigger** from solar position (a stub already exists in the scorer's design).
+- **CapCut share extension** once a multi-asset import URL scheme is available.
