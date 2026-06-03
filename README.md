@@ -8,6 +8,16 @@ VlogNudge watches lightweight, on-device context signals (location, motion, cale
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/today.png" width="180" alt="Today — next nudge and daily clip progress">
+  <img src="docs/screenshots/home.png" width="180" alt="Home — progress ring and albums">
+  <img src="docs/screenshots/timeline.png" width="180" alt="Timeline — calendar of captured clips">
+  <img src="docs/screenshots/settings.png" width="180" alt="Settings — frequency, active window, quiet hours">
+  <img src="docs/screenshots/settings-places.png" width="180" alt="Settings — capture, bad-day mute, permissions &amp; places">
+</p>
+
 ## Engineering highlights
 
 - **A pure, deterministic nudge engine.** [`NudgeScorer`](vlognudgee/Services/NudgeScorer.swift) is a side-effect-free function — `(context, settings, history) → decision` — that's trivial to reason about and test. Scheduling, notifications, and persistence are kept strictly separate from the decision logic.
@@ -114,3 +124,7 @@ Natural extensions beyond the current build:
 - **Idea-memo transcription** via `SFSpeechRecognizer`.
 - **Golden-hour trigger** from solar position (a stub already exists in the scorer's design).
 - **CapCut share extension** once a multi-asset import URL scheme is available.
+
+## License
+
+VlogNudge is proprietary — see [LICENSE](LICENSE). The source is public for reference and portfolio purposes; all rights are reserved.
