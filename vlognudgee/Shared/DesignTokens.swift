@@ -9,36 +9,40 @@
 //
 
 import SwiftUI
+import UIKit
 
 // MARK: - Color Palette
 
+// Native iOS palette: Apple's adaptive system colors with a familiar
+// systemOrange accent. Using the system grays/labels makes the app read
+// as a stock iOS app and keeps contrast correct in both appearances.
 enum VNColor {
     // 60% — Dominant: main backgrounds, screens, canvas
-    static let dominant = Color(hex: "0F172A")
-    static let dominantLight = Color(hex: "141D32")
+    static let dominant = Color(uiColor: .systemBackground)
+    static let dominantLight = Color(uiColor: .secondarySystemBackground)
 
     // 30% — Secondary: cards, navigation, headers, panels
-    static let secondary = Color(hex: "1E2937")
-    static let secondaryLight = Color(hex: "263344")
+    static let secondary = Color(uiColor: .secondarySystemBackground)
+    static let secondaryLight = Color(uiColor: .tertiarySystemBackground)
 
     // 10% — Accent: CTAs, active borders, icons, progress, links
-    static let accent = Color(hex: "E8553A")
+    static let accent = Color(uiColor: .systemOrange)
     static let accentDim = accent.opacity(0.15)
     static let accentGlow = accent.opacity(0.3)
 
-    // Text hierarchy on dark backgrounds (WCAG AA compliant)
-    static let textPrimary = Color.white
-    static let textSecondary = Color.white.opacity(0.6)
-    static let textTertiary = Color.white.opacity(0.38)
+    // Text hierarchy — adaptive label colors (WCAG AA in both appearances)
+    static let textPrimary = Color(uiColor: .label)
+    static let textSecondary = Color(uiColor: .secondaryLabel)
+    static let textTertiary = Color(uiColor: .tertiaryLabel)
 
     // Semantic colors
-    static let success = Color(hex: "22C55E")
-    static let warning = Color(hex: "F59E0B")
-    static let destructive = Color(hex: "EF4444")
+    static let success = Color(uiColor: .systemGreen)
+    static let warning = Color(uiColor: .systemOrange)
+    static let destructive = Color(uiColor: .systemRed)
 
     // Surface for elevated elements (sheets, overlays)
-    static let surface = Color(hex: "1E2937")
-    static let surfaceElevated = Color(hex: "263344")
+    static let surface = Color(uiColor: .secondarySystemBackground)
+    static let surfaceElevated = Color(uiColor: .tertiarySystemBackground)
 }
 
 // MARK: - Typography Presets

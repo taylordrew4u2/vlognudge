@@ -16,7 +16,7 @@ import SwiftUI
 
 // Widget-local palette — keep in sync with VNColor in DesignTokens.swift
 private enum WidgetColor {
-    static let accent = Color(red: 232/255, green: 85/255, blue: 58/255)  // #E8553A
+    static let accent = Color.orange  // systemOrange — matches the app accent
 }
 
 // MARK: - Helpers

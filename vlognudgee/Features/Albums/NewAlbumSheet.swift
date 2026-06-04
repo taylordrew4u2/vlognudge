@@ -16,7 +16,7 @@ struct NewAlbumSheet: View {
 
     @State private var name: String = ""
     @State private var selectedIcon: String = "film.stack"
-    @State private var selectedColor: String = "E8553A"
+    @State private var selectedColor: String = "FF9500"
 
     private let iconOptions = [
         "film.stack", "video.fill", "camera.fill", "star.fill",
@@ -24,7 +24,7 @@ struct NewAlbumSheet: View {
     ]
 
     private let colorOptions = [
-        "E8553A", "22C55E", "3B82F6", "8B5CF6",
+        "FF9500", "22C55E", "3B82F6", "8B5CF6",
         "F59E0B", "EF4444", "EC4899", "F97316"
     ]
 
