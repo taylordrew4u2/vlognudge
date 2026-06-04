@@ -100,7 +100,7 @@ final class NotificationService {
 
         if !hapticOnly {
             content.sound = useCustomSound
-                ? UNNotificationSound(named: UNNotificationSoundName("NudgeSound.caf"))
+                ? UNNotificationSound(named: UNNotificationSoundName("NudgeSound.wav"))
                 : .default
         }
 
@@ -146,7 +146,7 @@ final class NotificationService {
 
         if !hapticOnly {
             content.sound = useCustomSound
-                ? UNNotificationSound(named: UNNotificationSoundName("NudgeSound.caf"))
+                ? UNNotificationSound(named: UNNotificationSoundName("NudgeSound.wav"))
                 : .default
         }
         content.threadIdentifier = "vlog-nudges"

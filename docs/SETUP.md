@@ -44,15 +44,15 @@ These are configured as `INFOPLIST_KEY_*` build settings on the main app target:
 
 Also registered: the background task identifier `com.taylordrew.vlognudge.refresh` (see [`NudgeScheduler.bgTaskIdentifier`](../vlognudgee/Services/NudgeScheduler.swift)).
 
-## Custom notification sound (optional)
+## Custom notification sound
 
-Add a short (~0.4s), distinctive `NudgeSound.caf` to the main app bundle:
+A custom nudge chime ships in the app target at [`vlognudgee/NudgeSound.wav`](../vlognudgee/NudgeSound.wav) and is referenced by `NotificationService` (`UNNotificationSound(named: "NudgeSound.wav")`). Because the app folder is file-system synchronized, the file is bundled automatically — no manual target-membership step.
+
+To swap in your own, replace that file (keep the name, or update the two references in `NotificationService.swift`). Notification sounds must be ≤ 30s and in `.wav`, `.aiff`, or `.caf`. To convert on a Mac:
 
 ```bash
-afconvert input.wav -f caff -d ima4 NudgeSound.caf
+afconvert input.wav -f caff -d ima4 NudgeSound.caf   # then update the references to .caf
 ```
-
-Drag it into Xcode with "Copy items if needed" checked and the main app target selected.
 
 ## First-run smoke test
 
