@@ -126,7 +126,7 @@ Natural extensions beyond the current build:
 
 - **Calibration mode** — observe the first few days and auto-tune scoring weights toward the nudges that actually convert.
 - **Golden-hour trigger** from solar position (a stub already exists in the scorer's design).
-- **CapCut share extension** once a multi-asset import URL scheme is available.
+- **One-tap CapCut handoff** — today export opens the Photos album for a manual share to CapCut; a tighter handoff depends on CapCut exposing a public import API, which it currently does not.
 
 ## License
 
