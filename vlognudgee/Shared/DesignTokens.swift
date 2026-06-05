@@ -12,13 +12,13 @@ import SwiftUI
 
 // MARK: - Color Palette
 
-// Brand palette — Coral Red accent on Shadow Grey, with Porcelain text and
-// Baltic Blue / Bright Gold as supporting colors. Coral Red matches the app icon.
+// Brand palette — Porcelain · Baltic Blue · Flag Red · Bright Gold · Shadow Grey.
+// Flag Red is the primary accent (record-forward); Shadow Grey anchors the dark
+// canvas, Porcelain carries text, Bright Gold highlights, Baltic Blue supports.
 enum VNColor {
     // Brand swatches
     static let porcelain  = Color(hex: "FDFFFC")
     static let balticBlue = Color(hex: "235789")
-    static let coral      = Color(hex: "EF5350")
     static let flagRed    = Color(hex: "C1292E")
     static let brightGold = Color(hex: "F1D302")
     static let shadowGrey = Color(hex: "161925")
@@ -32,7 +32,7 @@ enum VNColor {
     static let secondaryLight = Color(hex: "2B3346")
 
     // 10% — Accent: CTAs, active borders, icons, progress, links
-    static let accent = coral
+    static let accent = flagRed
     static let accentDim = accent.opacity(0.15)
     static let accentGlow = accent.opacity(0.3)
 
