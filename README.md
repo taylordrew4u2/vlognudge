@@ -105,7 +105,7 @@ The project uses Xcode's **file-system synchronized folders**: every file under 
 3. If building under your own account, point the **App Group** and **iCloud/CloudKit container** IDs at ones your team owns — they live in [`AppConstants.swift`](vlognudgee/Shared/AppConstants.swift) and the target capabilities.
 4. Build and run on device, then walk through onboarding (camera/mic/photos/notifications are required; motion/location/calendar/health are optional but make the nudges smart).
 
-More detail — full capability list, permission strings, and Xcode troubleshooting — is in [`docs/SETUP.md`](docs/SETUP.md).
+More detail — full capability list, permission strings, and Xcode troubleshooting — is in [`docs/SETUP.md`](docs/SETUP.md). Common user questions (how nudges decide, privacy, custom schedule, permissions) are answered in [`docs/FAQ.md`](docs/FAQ.md).
 
 ## Design notes
 
@@ -121,7 +121,6 @@ A few decisions worth calling out:
 Natural extensions beyond the current build:
 
 - **Calibration mode** — observe the first few days and auto-tune scoring weights toward the nudges that actually convert.
-- **Idea-memo transcription** via `SFSpeechRecognizer`.
 - **Golden-hour trigger** from solar position (a stub already exists in the scorer's design).
 - **CapCut share extension** once a multi-asset import URL scheme is available.
 
