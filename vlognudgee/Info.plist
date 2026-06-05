@@ -19,17 +19,34 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>VlogNudge checks nearby calendar events to avoid nudging you at the wrong time and to suggest recording after events.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>VlogNudge checks nearby calendar events to avoid nudging you at the wrong time and to suggest recording after events.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>VlogNudge uses the camera so you can record short vlog clips.</string>
+	<key>NSFocusStatusUsageDescription</key>
+	<string>VlogNudge checks Focus status to avoid interrupting you during Sleep or Do Not Disturb.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>VlogNudge reads workout activity to suggest recording after a workout ends.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>VlogNudge does not save data to Health.</string>
+	<string>VlogNudge does not write or save data to Health.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Enable Background Location for Place Nudges so VlogNudge can remind you to record when you arrive at or leave saved places even while the app is not open.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>VlogNudge uses your location while the app is open to help you add saved places for Place Nudges.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>VlogNudge uses the microphone to capture audio while recording vlog clips.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>VlogNudge uses motion activity to recognize arrival moments and avoid nudging while you are driving.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>VlogNudge saves recorded clips to your Daily Vlogs album in Photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>VlogNudge accesses clips it saved so you can play them back in the app.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
 		<string>location</string>
-		<string>processing</string>
 		<string>remote-notification</string>
 	</array>
 </dict>

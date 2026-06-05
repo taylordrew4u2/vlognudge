@@ -13,19 +13,19 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		BA4339652F9854F900185CA3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BAF19BAF2F97E2C90087AC0F /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BA4339502F9854F700185CA3;
-			remoteInfo = vlogExtension;
-		};
 		AABBCC020000000000000A06 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BAF19BAF2F97E2C90087AC0F /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = BAF19BB62F97E2C90087AC0F;
 			remoteInfo = vlognudgee;
+		};
+		BA4339652F9854F900185CA3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BAF19BAF2F97E2C90087AC0F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BA4339502F9854F700185CA3;
+			remoteInfo = vlogExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -44,12 +44,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AABBCC020000000000000A01 /* vlognudgeeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = vlognudgeeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA39EF772F99449600BC11D4 /* vlogExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = vlogExtension.entitlements; sourceTree = "<group>"; };
 		BA4339512F9854F700185CA3 /* vlogExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = vlogExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA4339532F9854F700185CA3 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		BA4339552F9854F700185CA3 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		BAF19BB72F97E2C90087AC0F /* vlognudgee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vlognudgee.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AABBCC020000000000000A01 /* vlognudgeeTests.xctest */ = {isa = PBXFileReference; explicitFileType = "wrapper.cfbundle"; includeInIndex = 0; path = vlognudgeeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -70,6 +70,16 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		AABBCC020000000000000A02 /* vlognudgeeTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = vlognudgeeTests;
+			sourceTree = "<group>";
+		};
+		BA00000000000000000000A1 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		BA4339572F9854F700185CA3 /* vlog */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -86,19 +96,16 @@
 			path = vlognudgee;
 			sourceTree = "<group>";
 		};
-		BA00000000000000000000A1 /* Shared */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		AABBCC020000000000000A02 /* vlognudgeeTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = vlognudgeeTests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		AABBCC020000000000000A09 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BA43394E2F9854F700185CA3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -109,13 +116,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		BAF19BB42F97E2C90087AC0F /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		AABBCC020000000000000A09 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -160,54 +160,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		BA4339502F9854F700185CA3 /* vlogExtension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = BA43396B2F9854F900185CA3 /* Build configuration list for PBXNativeTarget "vlogExtension" */;
-			buildPhases = (
-				BA43394D2F9854F700185CA3 /* Sources */,
-				BA43394E2F9854F700185CA3 /* Frameworks */,
-				BA43394F2F9854F700185CA3 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				BA4339572F9854F700185CA3 /* vlog */,
-				BA00000000000000000000A1 /* Shared */,
-			);
-			name = vlogExtension;
-			packageProductDependencies = (
-			);
-			productName = vlogExtension;
-			productReference = BA4339512F9854F700185CA3 /* vlogExtension.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
-		BAF19BB62F97E2C90087AC0F /* vlognudgee */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = BAF19BC52F97E2CA0087AC0F /* Build configuration list for PBXNativeTarget "vlognudgee" */;
-			buildPhases = (
-				BAF19BB32F97E2C90087AC0F /* Sources */,
-				BAF19BB42F97E2C90087AC0F /* Frameworks */,
-				BAF19BB52F97E2C90087AC0F /* Resources */,
-				BA4339682F9854F900185CA3 /* Embed Foundation Extensions */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				BA4339662F9854F900185CA3 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				BAF19BB92F97E2C90087AC0F /* vlognudgee */,
-				BA00000000000000000000A1 /* Shared */,
-			);
-			name = vlognudgee;
-			packageProductDependencies = (
-			);
-			productName = vlognudgee;
-			productReference = BAF19BB72F97E2C90087AC0F /* vlognudgee.app */;
-			productType = "com.apple.product-type.application";
-		};
 		AABBCC020000000000000A00 /* vlognudgeeTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AABBCC020000000000000A03 /* Build configuration list for PBXNativeTarget "vlognudgeeTests" */;
@@ -231,6 +183,54 @@
 			productReference = AABBCC020000000000000A01 /* vlognudgeeTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		BA4339502F9854F700185CA3 /* vlogExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BA43396B2F9854F900185CA3 /* Build configuration list for PBXNativeTarget "vlogExtension" */;
+			buildPhases = (
+				BA43394D2F9854F700185CA3 /* Sources */,
+				BA43394E2F9854F700185CA3 /* Frameworks */,
+				BA43394F2F9854F700185CA3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				BA00000000000000000000A1 /* Shared */,
+				BA4339572F9854F700185CA3 /* vlog */,
+			);
+			name = vlogExtension;
+			packageProductDependencies = (
+			);
+			productName = vlogExtension;
+			productReference = BA4339512F9854F700185CA3 /* vlogExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		BAF19BB62F97E2C90087AC0F /* vlognudgee */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BAF19BC52F97E2CA0087AC0F /* Build configuration list for PBXNativeTarget "vlognudgee" */;
+			buildPhases = (
+				BAF19BB32F97E2C90087AC0F /* Sources */,
+				BAF19BB42F97E2C90087AC0F /* Frameworks */,
+				BAF19BB52F97E2C90087AC0F /* Resources */,
+				BA4339682F9854F900185CA3 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BA4339662F9854F900185CA3 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BA00000000000000000000A1 /* Shared */,
+				BAF19BB92F97E2C90087AC0F /* vlognudgee */,
+			);
+			name = vlognudgee;
+			packageProductDependencies = (
+			);
+			productName = vlognudgee;
+			productReference = BAF19BB72F97E2C90087AC0F /* vlognudgee.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -239,7 +239,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2640;
-				LastUpgradeCheck = 2640;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					AABBCC020000000000000A00 = {
 						CreatedOnToolsVersion = 26.4.1;
@@ -275,6 +275,13 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		AABBCC020000000000000A0A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BA43394F2F9854F700185CA3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -289,16 +296,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AABBCC020000000000000A0A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AABBCC020000000000000A08 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-/* End PBXResourcesBuildPhase section */
-
-/* Begin PBXSourcesBuildPhase section */
 		BA43394D2F9854F700185CA3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -313,29 +320,70 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AABBCC020000000000000A08 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		BA4339662F9854F900185CA3 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BA4339502F9854F700185CA3 /* vlogExtension */;
-			targetProxy = BA4339652F9854F900185CA3 /* PBXContainerItemProxy */;
-		};
 		AABBCC020000000000000A07 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = BAF19BB62F97E2C90087AC0F /* vlognudgee */;
 			targetProxy = AABBCC020000000000000A06 /* PBXContainerItemProxy */;
 		};
+		BA4339662F9854F900185CA3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BA4339502F9854F700185CA3 /* vlogExtension */;
+			targetProxy = BA4339652F9854F900185CA3 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		AABBCC020000000000000A04 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R44WG942GS;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = comedy.vlognudgeeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/vlognudgee.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/vlognudgee";
+			};
+			name = Debug;
+		};
+		AABBCC020000000000000A05 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R44WG942GS;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = comedy.vlognudgeeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/vlognudgee.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/vlognudgee";
+			};
+			name = Release;
+		};
 		BA4339692F9854F900185CA3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -415,7 +463,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = vlognudgee/vlognudgee.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = R44WG942GS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -460,7 +508,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = vlognudgee/vlognudgee.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = R44WG942GS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -557,6 +605,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -614,62 +663,24 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		AABBCC020000000000000A04 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = R44WG942GS;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = comedy.vlognudgeeTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/vlognudgee.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/vlognudgee";
-			};
-			name = Debug;
-		};
-		AABBCC020000000000000A05 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = R44WG942GS;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = comedy.vlognudgeeTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/vlognudgee.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/vlognudgee";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		AABBCC020000000000000A03 /* Build configuration list for PBXNativeTarget "vlognudgeeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AABBCC020000000000000A04 /* Debug */,
+				AABBCC020000000000000A05 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		BA43396B2F9854F900185CA3 /* Build configuration list for PBXNativeTarget "vlogExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -693,15 +704,6 @@
 			buildConfigurations = (
 				BAF19BC62F97E2CA0087AC0F /* Debug */,
 				BAF19BC72F97E2CA0087AC0F /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		AABBCC020000000000000A03 /* Build configuration list for PBXNativeTarget "vlognudgeeTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				AABBCC020000000000000A04 /* Debug */,
-				AABBCC020000000000000A05 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
