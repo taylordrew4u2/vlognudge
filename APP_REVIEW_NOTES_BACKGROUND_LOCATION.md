@@ -14,7 +14,7 @@ VlogNudge uses background location for Place Nudges. When the user explicitly en
 2. Go to Settings → Location / Background Location.
 3. Read the Place Nudges explanation on the screen.
 4. Tap Add demo review geofence to create a sample saved place.
-5. Tap Enable Background Location or turn on Place Nudges use background location.
+5. Tap Enable Background Location.
 6. Grant location permissions when prompted.
 7. Confirm the status changes from Background location is off or Location permission needed to Background location is active after Always permission is granted.
 
