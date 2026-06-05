@@ -29,7 +29,10 @@ struct TodayView: View {
     }
 
     private var target: Int {
-        settings.frequency.baselineCountPerDay == 0
+        if settings.customScheduleEnabled {
+            return max(1, settings.customTimesForToday.count)
+        }
+        return settings.frequency.baselineCountPerDay == 0
             ? 8
             : settings.frequency.baselineCountPerDay
     }

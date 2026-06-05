@@ -102,7 +102,7 @@ final class NudgeScheduler {
         )
         let todayCount = (try? context.fetchCount(todayDescriptor)) ?? 0
         defaults?.set(todayCount, forKey: "clipsToday")
-        defaults?.set(settings.frequency.baselineCountPerDay, forKey: "targetToday")
+        defaults?.set(plannedTarget(for: settings), forKey: "targetToday")
 
         // Last clip timestamp
         if let lastDate = fetchLastClipDate(context: context) {
@@ -178,7 +178,7 @@ final class NudgeScheduler {
         )
         let todayCount = (try? context.fetchCount(todayDescriptor)) ?? 0
         defaults?.set(todayCount, forKey: "clipsToday")
-        defaults?.set(settings.frequency.baselineCountPerDay, forKey: "targetToday")
+        defaults?.set(plannedTarget(for: settings), forKey: "targetToday")
 
         // Cancel any pending nudges in the near future (next hour)
         await NotificationService.shared.cancelNudges(after: Date())
@@ -262,7 +262,20 @@ final class NudgeScheduler {
 
     // MARK: - Baseline computation
 
+    /// How many baseline nudges are planned for today (custom schedule or frequency).
+    private func plannedTarget(for settings: UserSettings) -> Int {
+        settings.customScheduleEnabled
+            ? settings.customTimesForToday.count
+            : settings.frequency.baselineCountPerDay
+    }
+
     private func computeBaselineTimes(settings: UserSettings) -> [Date] {
+        // Custom schedule overrides the frequency-based spread: use the exact
+        // times the user set for today's weekday (no jitter — they're explicit).
+        if settings.customScheduleEnabled {
+            return settings.customTimesForToday.map { DateHelpers.todayAt(minute: $0) }
+        }
+
         let count = settings.frequency.baselineCountPerDay
         guard count > 0 else { return [] }
 
