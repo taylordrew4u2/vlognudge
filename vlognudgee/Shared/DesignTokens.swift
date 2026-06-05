@@ -9,40 +9,50 @@
 //
 
 import SwiftUI
-import UIKit
 
 // MARK: - Color Palette
 
-// Native iOS palette: Apple's adaptive system colors with a familiar
-// systemOrange accent. Using the system grays/labels makes the app read
-// as a stock iOS app and keeps contrast correct in both appearances.
+// Brand palette — Porcelain · Baltic Blue · Flag Red · Bright Gold · Shadow Grey.
+// Flag Red is the primary accent (record-forward); Shadow Grey anchors the dark
+// canvas, Porcelain carries text, Bright Gold highlights, Baltic Blue supports.
 enum VNColor {
+    // Brand swatches
+    static let porcelain  = Color(hex: "FDFFFC")
+    static let balticBlue = Color(hex: "235789")
+    static let flagRed    = Color(hex: "C1292E")
+    static let brightGold = Color(hex: "F1D302")
+    static let shadowGrey = Color(hex: "161925")
+
     // 60% — Dominant: main backgrounds, screens, canvas
-    static let dominant = Color(uiColor: .systemBackground)
-    static let dominantLight = Color(uiColor: .secondarySystemBackground)
+    static let dominant = shadowGrey
+    static let dominantLight = Color(hex: "1E2433")
 
     // 30% — Secondary: cards, navigation, headers, panels
-    static let secondary = Color(uiColor: .secondarySystemBackground)
-    static let secondaryLight = Color(uiColor: .tertiarySystemBackground)
+    static let secondary = Color(hex: "212838")
+    static let secondaryLight = Color(hex: "2B3346")
 
     // 10% — Accent: CTAs, active borders, icons, progress, links
-    static let accent = Color(uiColor: .systemOrange)
+    static let accent = flagRed
     static let accentDim = accent.opacity(0.15)
     static let accentGlow = accent.opacity(0.3)
 
-    // Text hierarchy — adaptive label colors (WCAG AA in both appearances)
-    static let textPrimary = Color(uiColor: .label)
-    static let textSecondary = Color(uiColor: .secondaryLabel)
-    static let textTertiary = Color(uiColor: .tertiaryLabel)
+    // Text hierarchy on the dark canvas (Porcelain)
+    static let textPrimary = porcelain
+    static let textSecondary = porcelain.opacity(0.6)
+    static let textTertiary = porcelain.opacity(0.4)
 
     // Semantic colors
-    static let success = Color(uiColor: .systemGreen)
-    static let warning = Color(uiColor: .systemOrange)
-    static let destructive = Color(uiColor: .systemRed)
+    static let success = balticBlue
+    static let warning = brightGold
+    static let destructive = flagRed
+
+    // Supporting accents (available for highlights / secondary actions)
+    static let highlight = brightGold
+    static let secondaryAccent = balticBlue
 
     // Surface for elevated elements (sheets, overlays)
-    static let surface = Color(uiColor: .secondarySystemBackground)
-    static let surfaceElevated = Color(uiColor: .tertiarySystemBackground)
+    static let surface = secondary
+    static let surfaceElevated = secondaryLight
 }
 
 // MARK: - Typography Presets
