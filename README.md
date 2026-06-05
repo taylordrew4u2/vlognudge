@@ -4,7 +4,7 @@
 ![Swift](https://img.shields.io/badge/Swift-5-EF5350?logo=swift&logoColor=white)
 ![License](https://img.shields.io/badge/license-Proprietary-EF5350)
 
-**An ADHD-aware iOS app that nudges you to capture day-in-the-life vlog clips — at the right moments, never the annoying ones.**
+**Your day, one clip at a time.** An ADHD-aware iOS app that nudges you to film day-in-the-life vlog clips.
 
 VlogNudge watches lightweight, on-device context signals (location, motion, calendar, workouts, Focus, time of day) and decides *when* a short "film a clip" reminder is actually welcome. Clips land in a dedicated Photos album ready for a CapCut editing workflow, and a Live Activity keeps the day's pace glanceable on the Lock Screen.
 
