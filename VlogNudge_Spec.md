@@ -654,7 +654,7 @@ CapCut imports from the iOS Photos library, so the path is:
 3. Tapping it opens the Photos app via `photos-redirect://` URL scheme to the album
 4. User selects clips (starred are visually distinct via a Smart Album filter we create) and shares to CapCut
 
-Future enhancement (not v1): direct CapCut share extension integration if/when CapCut exposes a URL scheme for importing a set of asset IDs.
+Future enhancement (not v1): a tighter CapCut handoff is only possible if CapCut publishes a public import API (e.g. a URL scheme or share extension that accepts a set of asset IDs). No such API exists today, so the manual Photos → share path above is the supported flow.
 
 ---
 
