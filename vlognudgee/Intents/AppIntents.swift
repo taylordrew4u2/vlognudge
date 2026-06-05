@@ -63,8 +63,8 @@ struct RecordClipIntent: AppIntent {
 }
 
 struct CaptureIdeaIntent: AppIntent {
-    static var title: LocalizedStringResource = "Capture a vlog idea"
-    static var description = IntentDescription("Quick voice memo to save a vlog idea for later.")
+    static var title: LocalizedStringResource = "Jot down a vlog idea"
+    static var description = IntentDescription("Opens Ideas to write down a video idea for later.")
     static var openAppWhenRun: Bool = true
 
     func perform() async throws -> some IntentResult {

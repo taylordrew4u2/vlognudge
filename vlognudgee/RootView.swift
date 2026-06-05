@@ -70,6 +70,7 @@ struct RootView: View {
                 showCapture = true
             case .ideaMemo:
                 selectedTab = 3
+                appState.composeIdea = true
                 appState.clearDeepLink()
             case .timeline:
                 selectedTab = 2

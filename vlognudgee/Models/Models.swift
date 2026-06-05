@@ -126,15 +126,13 @@ final class Geofence {
 final class IdeaMemo {
     var id: UUID = UUID()
     var createdAt: Date = Date()
-    var audioFilePath: String?
+    var text: String = ""
     var usedAt: Date?
-    var shortLabel: String?
 
-    init(audioFilePath: String? = nil, shortLabel: String? = nil) {
+    init(text: String = "") {
         self.id = UUID()
         self.createdAt = Date()
-        self.audioFilePath = audioFilePath
-        self.shortLabel = shortLabel
+        self.text = text
     }
 }
 
