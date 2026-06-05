@@ -173,7 +173,7 @@ struct TodayView: View {
             HStack(spacing: VNSpacing.sm) {
                 Image(systemName: "lightbulb.fill")
                     .foregroundStyle(VNColor.accent)
-                Text("Capture idea")
+                Text("Add a video idea")
                     .font(VNFont.subheadline)
                     .foregroundStyle(VNColor.textPrimary)
             }

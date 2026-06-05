@@ -2,280 +2,242 @@
 //  IdeasView.swift
 //  VlogNudge
 //
-//  6:3:1 — Dominant bg, Secondary list rows, Accent play/record controls.
+//  A simple place to jot down video ideas for later. Tap an idea to edit,
+//  swipe to mark it used or delete. The "+" (and the Today-screen "Capture
+//  idea" button / Capture-idea intent) open the editor straight away.
 //
 
 import SwiftUI
 import SwiftData
-import AVFoundation
-import os
 
 struct IdeasView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \IdeaMemo.createdAt, order: .reverse) private var memos: [IdeaMemo]
-    @State private var showRecorder = false
+    @Environment(AppState.self) private var appState
+    @Query(sort: \IdeaMemo.createdAt, order: .reverse) private var ideas: [IdeaMemo]
+
+    @State private var showEditor = false
+    @State private var editingIdea: IdeaMemo?
 
     var body: some View {
         NavigationStack {
             Group {
-                if memos.isEmpty {
-                    VStack(spacing: VNSpacing.lg) {
-                        Image(systemName: "lightbulb")
-                            .font(.system(size: 56))
-                            .foregroundStyle(VNColor.textTertiary)
-                        Text("No ideas yet")
-                            .font(VNFont.title2)
-                            .foregroundStyle(VNColor.textPrimary)
-                        Text("Hit the button below the next time a vlog idea hits you — we'll surface it as a prompt on your next nudge.")
-                            .font(VNFont.callout)
-                            .foregroundStyle(VNColor.textSecondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, VNSpacing.xxxl)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(VNColor.dominant)
+                if ideas.isEmpty {
+                    emptyState
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 1) {
-                            ForEach(memos) { memo in
-                                IdeaRow(memo: memo, onDelete: { deleteMemo(memo) })
-                            }
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: VNRadius.lg))
-                        .padding(.horizontal, VNSpacing.lg)
-                        .padding(.top, VNSpacing.sm)
-                        .padding(.bottom, 100) // room for bottom button
-                    }
-                    .background(VNColor.dominant)
+                    ideaList
                 }
             }
             .navigationTitle("Ideas")
-            .safeAreaInset(edge: .bottom) {
-                Button {
-                    showRecorder = true
-                } label: {
-                    HStack(spacing: VNSpacing.sm) {
-                        Image(systemName: "mic.fill")
-                        Text("Capture idea")
-                    }
-                    .font(VNFont.headline)
-                    .foregroundStyle(VNColor.dominant)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, VNSpacing.lg)
-                    .background(VNColor.accent, in: RoundedRectangle(cornerRadius: VNRadius.lg))
-                    .padding(.horizontal, VNSpacing.lg)
-                    .padding(.bottom, VNSpacing.sm)
-                }
-                .buttonStyle(.plain)
-                .background(
-                    LinearGradient(
-                        colors: [VNColor.dominant, VNColor.dominant.opacity(0)],
-                        startPoint: .bottom,
-                        endPoint: .top
-                    )
-                    .frame(height: 40)
-                    .allowsHitTesting(false),
-                    alignment: .top
-                )
+            .safeAreaInset(edge: .bottom) { addButton }
+            .sheet(isPresented: $showEditor) {
+                IdeaEditorView(idea: editingIdea)
             }
-            .sheet(isPresented: $showRecorder) {
-                IdeaRecorderView()
+            .onChange(of: appState.composeIdea, initial: true) { _, compose in
+                if compose {
+                    presentEditor(for: nil)
+                    appState.composeIdea = false
+                }
             }
         }
     }
 
-    private func deleteMemo(_ memo: IdeaMemo) {
-        if let path = memo.audioFilePath {
-            try? FileManager.default.removeItem(atPath: path)
+    // MARK: - Empty state
+
+    private var emptyState: some View {
+        VStack(spacing: VNSpacing.lg) {
+            Image(systemName: "lightbulb")
+                .font(.system(size: 56))
+                .foregroundStyle(VNColor.textTertiary)
+            Text("No ideas yet")
+                .font(VNFont.title2)
+                .foregroundStyle(VNColor.textPrimary)
+            Text("Jot down video ideas whenever they strike — we'll keep them here so you always have something to film.")
+                .font(VNFont.callout)
+                .foregroundStyle(VNColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, VNSpacing.xxxl)
         }
-        modelContext.delete(memo)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(VNColor.dominant)
+    }
+
+    // MARK: - List
+
+    private var ideaList: some View {
+        List {
+            ForEach(ideas) { idea in
+                IdeaRow(idea: idea)
+                    .contentShape(Rectangle())
+                    .onTapGesture { presentEditor(for: idea) }
+                    .listRowBackground(VNColor.secondary)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button(role: .destructive) {
+                            delete(idea)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                    .swipeActions(edge: .leading) {
+                        Button {
+                            toggleUsed(idea)
+                        } label: {
+                            Label(idea.usedAt == nil ? "Used" : "Unmark",
+                                  systemImage: idea.usedAt == nil ? "checkmark" : "arrow.uturn.backward")
+                        }
+                        .tint(VNColor.success)
+                    }
+            }
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(VNColor.dominant)
+    }
+
+    // MARK: - Add button
+
+    private var addButton: some View {
+        Button {
+            presentEditor(for: nil)
+        } label: {
+            HStack(spacing: VNSpacing.sm) {
+                Image(systemName: "plus")
+                Text("New idea")
+            }
+            .font(VNFont.headline)
+            .foregroundStyle(VNColor.dominant)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, VNSpacing.lg)
+            .background(VNColor.accent, in: RoundedRectangle(cornerRadius: VNRadius.lg))
+            .padding(.horizontal, VNSpacing.lg)
+            .padding(.bottom, VNSpacing.sm)
+        }
+        .buttonStyle(.plain)
+        .background(
+            LinearGradient(
+                colors: [VNColor.dominant, VNColor.dominant.opacity(0)],
+                startPoint: .bottom,
+                endPoint: .top
+            )
+            .frame(height: 40)
+            .allowsHitTesting(false),
+            alignment: .top
+        )
+    }
+
+    // MARK: - Actions
+
+    private func presentEditor(for idea: IdeaMemo?) {
+        editingIdea = idea
+        showEditor = true
+    }
+
+    private func toggleUsed(_ idea: IdeaMemo) {
+        idea.usedAt = idea.usedAt == nil ? Date() : nil
+        try? modelContext.save()
+    }
+
+    private func delete(_ idea: IdeaMemo) {
+        modelContext.delete(idea)
         try? modelContext.save()
     }
 }
 
-// MARK: - Idea Row (themed)
+// MARK: - Idea Row
 
 struct IdeaRow: View {
-    @Environment(\.modelContext) private var modelContext
-    let memo: IdeaMemo
-    let onDelete: () -> Void
-    @State private var isPlaying = false
-    @State private var player: AVAudioPlayer?
+    let idea: IdeaMemo
+
+    private var isUsed: Bool { idea.usedAt != nil }
 
     var body: some View {
-        HStack(spacing: VNSpacing.md) {
-            Button {
-                togglePlayback()
-            } label: {
-                Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                    .font(.system(size: 38))
-                    .foregroundStyle(VNColor.accent)
-            }
+        HStack(alignment: .top, spacing: VNSpacing.md) {
+            Image(systemName: isUsed ? "checkmark.circle.fill" : "lightbulb.fill")
+                .font(.system(size: 20))
+                .foregroundStyle(isUsed ? VNColor.success : VNColor.accent)
+                .padding(.top, 2)
 
             VStack(alignment: .leading, spacing: VNSpacing.xs) {
-                Text(memo.createdAt, style: .date)
+                Text(idea.text)
+                    .font(VNFont.body)
+                    .foregroundStyle(isUsed ? VNColor.textSecondary : VNColor.textPrimary)
+                    .strikethrough(isUsed)
+                    .lineLimit(4)
+                Text(idea.createdAt, style: .date)
                     .font(VNFont.caption)
                     .foregroundStyle(VNColor.textTertiary)
-                Text(memo.createdAt, style: .time)
-                    .font(VNFont.headline)
-                    .foregroundStyle(VNColor.textPrimary)
             }
 
-            Spacer()
-
-            if memo.usedAt != nil {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(VNColor.success)
-            }
-
-            Button(role: .destructive) {
-                onDelete()
-            } label: {
-                Image(systemName: "trash")
-                    .font(.subheadline)
-                    .foregroundStyle(VNColor.textTertiary)
-            }
+            Spacer(minLength: 0)
         }
-        .padding(VNSpacing.lg)
-        .background(VNColor.secondary)
-        .accessibilityLabel("Idea from \(memo.createdAt.formatted())")
-    }
-
-    private func togglePlayback() {
-        if isPlaying {
-            player?.stop()
-            isPlaying = false
-            return
-        }
-        guard let path = memo.audioFilePath else { return }
-        let url = URL(fileURLWithPath: path)
-        do {
-            player = try AVAudioPlayer(contentsOf: url)
-            player?.play()
-            isPlaying = true
-        } catch {
-            Logger.ideas.error("Playback error: \(error.localizedDescription, privacy: .public)")
-        }
+        .padding(.vertical, VNSpacing.xs)
+        .accessibilityLabel(isUsed ? "Used idea: \(idea.text)" : "Idea: \(idea.text)")
     }
 }
 
-// MARK: - Recorder (themed)
+// MARK: - Editor
 
-struct IdeaRecorderView: View {
+struct IdeaEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @State private var recorder: AVAudioRecorder?
-    @State private var isRecording = false
-    @State private var elapsed: Int = 0
-    @State private var timer: Timer?
+    /// nil = composing a new idea; non-nil = editing an existing one.
+    let idea: IdeaMemo?
+    @State private var text: String
+    @FocusState private var focused: Bool
+
+    init(idea: IdeaMemo?) {
+        self.idea = idea
+        _text = State(initialValue: idea?.text ?? "")
+    }
+
+    private var trimmed: String {
+        text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 
     var body: some View {
-        VStack(spacing: VNSpacing.xxxl) {
-            Spacer()
+        NavigationStack {
+            ZStack(alignment: .topLeading) {
+                VNColor.dominant.ignoresSafeArea()
 
-            ZStack {
-                // Glow ring when recording
-                if isRecording {
-                    Circle()
-                        .fill(VNColor.accentGlow)
-                        .frame(width: 160, height: 160)
+                TextEditor(text: $text)
+                    .focused($focused)
+                    .font(VNFont.body)
+                    .foregroundStyle(VNColor.textPrimary)
+                    .scrollContentBackground(.hidden)
+                    .padding(VNSpacing.lg)
+
+                if text.isEmpty {
+                    Text("What's the video idea?")
+                        .font(VNFont.body)
+                        .foregroundStyle(VNColor.textTertiary)
+                        .padding(.horizontal, VNSpacing.lg + 5)
+                        .padding(.top, VNSpacing.lg + 8)
+                        .allowsHitTesting(false)
                 }
-
-                Image(systemName: "mic.circle.fill")
-                    .font(.system(size: 120))
-                    .foregroundStyle(isRecording ? VNColor.accent : VNColor.textTertiary)
-                    .symbolEffect(.pulse, isActive: isRecording)
             }
-            .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: isRecording)
-
-            Text(isRecording ? "Recording \(elapsed)s" : "Tap the button to start")
-                .font(VNFont.title2)
-                .foregroundStyle(VNColor.textPrimary)
-
-            Spacer()
-
-            Button {
-                toggleRecording()
-            } label: {
-                Text(isRecording ? "Stop and save" : "Start recording")
-                    .font(VNFont.headline)
-                    .foregroundStyle(isRecording ? VNColor.textPrimary : VNColor.dominant)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, VNSpacing.lg)
-                    .background(
-                        isRecording ? VNColor.destructive : VNColor.accent,
-                        in: RoundedRectangle(cornerRadius: VNRadius.lg)
-                    )
+            .navigationTitle(idea == nil ? "New idea" : "Edit idea")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { save() }
+                        .disabled(trimmed.isEmpty)
+                }
             }
-            .buttonStyle(.plain)
-            .padding(.horizontal, VNSpacing.lg)
-
-            Button("Cancel") { dismiss() }
-                .font(VNFont.subheadline)
-                .foregroundStyle(VNColor.textSecondary)
-                .padding(.bottom, VNSpacing.lg)
-        }
-        .background(VNColor.dominant)
-        .onAppear {
-            prepareAudioSession()
+            .onAppear { focused = true }
         }
     }
 
-    private func prepareAudioSession() {
-        let session = AVAudioSession.sharedInstance()
-        try? session.setCategory(.playAndRecord, mode: .default)
-        try? session.setActive(true)
-        AVAudioApplication.requestRecordPermission { _ in }
-    }
-
-    private func toggleRecording() {
-        if isRecording {
-            stopAndSave()
+    private func save() {
+        guard !trimmed.isEmpty else { dismiss(); return }
+        if let idea {
+            idea.text = trimmed
         } else {
-            startRecording()
+            modelContext.insert(IdeaMemo(text: trimmed))
         }
-    }
-
-    private func startRecording() {
-        let filename = "idea-\(UUID().uuidString).m4a"
-        let url = FileManager.default
-            .urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent(filename)
-
-        let settings: [String: Any] = [
-            AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-            AVSampleRateKey: 44100,
-            AVNumberOfChannelsKey: 1,
-            AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue
-        ]
-
-        do {
-            recorder = try AVAudioRecorder(url: url, settings: settings)
-            recorder?.record()
-            isRecording = true
-            elapsed = 0
-            timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-                elapsed += 1
-                if elapsed >= 30 { stopAndSave() }
-            }
-        } catch {
-            Logger.ideas.error("Recorder error: \(error.localizedDescription, privacy: .public)")
-        }
-    }
-
-    private func stopAndSave() {
-        recorder?.stop()
-        timer?.invalidate()
-        let url = recorder?.url
-        isRecording = false
-
-        if let url {
-            let memo = IdeaMemo(audioFilePath: url.path)
-            modelContext.insert(memo)
-            try? modelContext.save()
-        }
-
+        try? modelContext.save()
         dismiss()
     }
 }

@@ -22,6 +22,10 @@ final class AppState {
     var currentPrompt: String?
     var activeAlbumName: String = AppConstants.photosAlbumName
 
+    /// Set when the user triggers "capture idea" so the Ideas tab opens the
+    /// new-idea editor immediately. Consumed (reset) by IdeasView.
+    var composeIdea: Bool = false
+
     private init() {}
 
     func requestCapture(prompt: String? = nil) {
