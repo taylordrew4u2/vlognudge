@@ -190,6 +190,11 @@ final class UserSettings {
     var windowStartMinute: Int = 600      // 10:00am
     var windowEndMinute: Int = 1320       // 22:00
 
+    // Custom schedule (optional): exact notification times per weekday.
+    // When enabled, these replace the frequency-based baseline times.
+    var customScheduleEnabled: Bool = false
+    var customScheduleJSON: String = ""   // [weekday 1=Sun…7=Sat: [minuteOfDay]]
+
     // Nudge behavior
     var frequencyRaw: String = NudgeFrequency.normal.rawValue
     var minGapBetweenNudgesMin: Int = 45
@@ -238,6 +243,27 @@ final class UserSettings {
     var orientationLock: OrientationLock {
         get { OrientationLock(rawValue: orientationLockRaw) ?? .vertical }
         set { orientationLockRaw = newValue.rawValue }
+    }
+
+    /// Exact nudge times per weekday (1 = Sunday … 7 = Saturday) as
+    /// minutes-from-midnight. Backed by `customScheduleJSON`.
+    var customSchedule: [Int: [Int]] {
+        get {
+            guard let data = customScheduleJSON.data(using: .utf8),
+                  let decoded = try? JSONDecoder().decode([Int: [Int]].self, from: data)
+            else { return [:] }
+            return decoded
+        }
+        set {
+            customScheduleJSON = (try? JSONEncoder().encode(newValue))
+                .flatMap { String(data: $0, encoding: .utf8) } ?? ""
+        }
+    }
+
+    /// Custom times for today's weekday, as minutes-from-midnight, sorted.
+    var customTimesForToday: [Int] {
+        let weekday = Calendar.current.component(.weekday, from: Date())
+        return (customSchedule[weekday] ?? []).sorted()
     }
 }
 

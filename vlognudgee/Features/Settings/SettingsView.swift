@@ -30,6 +30,7 @@ struct SettingsView: View {
             Form {
                 frequencySection
                 scheduleSection
+                customScheduleSection
                 quietHoursSection
                 contextSignalsSection
                 notificationsSection
@@ -88,6 +89,26 @@ struct SettingsView: View {
                     ),
                     in: 20...180,
                     step: 5)
+        }
+        .listRowBackground(VNColor.secondary)
+    }
+
+    // MARK: - Custom Schedule
+
+    private var customScheduleSection: some View {
+        Section {
+            Toggle("Custom schedule",
+                   isOn: Binding(get: { settings.customScheduleEnabled },
+                                 set: { settings.customScheduleEnabled = $0; save() }))
+            if settings.customScheduleEnabled {
+                NavigationLink("Set days & times") {
+                    CustomScheduleEditorView(settings: settings)
+                }
+            }
+        } header: {
+            Text("Custom Schedule")
+        } footer: {
+            Text("Pick exact notification times for specific days. When on, this replaces the frequency-based schedule — context nudges still apply.")
         }
         .listRowBackground(VNColor.secondary)
     }
@@ -269,6 +290,111 @@ struct SettingsView: View {
         Task {
             await NudgeScheduler.shared.ensureTodayIsScheduled(context: modelContext)
         }
+    }
+}
+
+// MARK: - Custom Schedule Editor
+
+struct CustomScheduleEditorView: View {
+    @Environment(\.modelContext) private var modelContext
+    let settings: UserSettings
+
+    /// Per-weekday "add" draft time (defaults to noon).
+    @State private var draftTimes: [Int: Date] = [:]
+
+    // Calendar.weekdaySymbols is ordered Sunday…Saturday (index 0 = Sunday),
+    // matching Calendar's weekday component (1 = Sunday … 7 = Saturday).
+    private var symbols: [String] { Calendar.current.weekdaySymbols }
+
+    var body: some View {
+        List {
+            ForEach(1...7, id: \.self) { weekday in
+                weekdaySection(weekday)
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .background(VNColor.dominant)
+        .navigationTitle("Days & Times")
+    }
+
+    private func weekdaySection(_ weekday: Int) -> some View {
+        let times = (settings.customSchedule[weekday] ?? []).sorted()
+        return Section(symbols[weekday - 1]) {
+            if times.isEmpty {
+                Text("No nudges")
+                    .font(VNFont.caption)
+                    .foregroundStyle(VNColor.textTertiary)
+            } else {
+                ForEach(times, id: \.self) { minute in
+                    HStack {
+                        Text(timeLabel(minute))
+                            .foregroundStyle(VNColor.textPrimary)
+                        Spacer()
+                        Button(role: .destructive) {
+                            remove(minute, from: weekday)
+                        } label: {
+                            Image(systemName: "minus.circle.fill")
+                                .foregroundStyle(VNColor.destructive)
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                }
+            }
+
+            HStack {
+                DatePicker("Add time",
+                           selection: draftBinding(for: weekday),
+                           displayedComponents: .hourAndMinute)
+                    .labelsHidden()
+                Spacer()
+                Button("Add") { addDraft(for: weekday) }
+                    .foregroundStyle(VNColor.accent)
+            }
+        }
+        .listRowBackground(VNColor.secondary)
+    }
+
+    // MARK: - Helpers
+
+    private func draftBinding(for weekday: Int) -> Binding<Date> {
+        Binding(
+            get: { draftTimes[weekday] ?? DateHelpers.todayAt(minute: 12 * 60) },
+            set: { draftTimes[weekday] = $0 }
+        )
+    }
+
+    private func minute(from date: Date) -> Int {
+        let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+        return (c.hour ?? 0) * 60 + (c.minute ?? 0)
+    }
+
+    private func timeLabel(_ minute: Int) -> String {
+        DateHelpers.todayAt(minute: minute).formatted(date: .omitted, time: .shortened)
+    }
+
+    private func addDraft(for weekday: Int) {
+        let m = minute(from: draftTimes[weekday] ?? DateHelpers.todayAt(minute: 12 * 60))
+        var schedule = settings.customSchedule
+        var arr = schedule[weekday] ?? []
+        guard !arr.contains(m) else { return }
+        arr.append(m)
+        schedule[weekday] = arr.sorted()
+        settings.customSchedule = schedule
+        persist()
+    }
+
+    private func remove(_ minute: Int, from weekday: Int) {
+        var schedule = settings.customSchedule
+        var arr = schedule[weekday] ?? []
+        arr.removeAll { $0 == minute }
+        schedule[weekday] = arr.isEmpty ? nil : arr
+        settings.customSchedule = schedule
+        persist()
+    }
+
+    private func persist() {
+        try? modelContext.save()
+        Task { await NudgeScheduler.shared.ensureTodayIsScheduled(context: modelContext) }
     }
 }
 
