@@ -604,7 +604,7 @@ struct PermissionsStatusView: View {
         notificationGranted = (status == .authorized || status == .provisional)
         cameraGranted = AVCaptureDevice.authorizationStatus(for: .video) == .authorized
         micGranted = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
-        let photos = PHPhotoLibrary.authorizationStatus(for: .addOnly)
+        let photos = PHPhotoLibrary.authorizationStatus(for: .readWrite)
         switch photos {
         case .authorized: photosStatus = "Granted"
         case .limited: photosStatus = "Limited"
@@ -614,3 +614,4 @@ struct PermissionsStatusView: View {
         }
     }
 }
+

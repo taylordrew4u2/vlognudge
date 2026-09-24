@@ -1,137 +1,122 @@
-//
-//  HomeView.swift
-//  VlogNudge
-//
-//  Main landing screen: album grid, today's progress, and record button.
-//  6:3:1 — Dominant bg, Secondary cards, Accent CTAs & active states.
-//
-
 import SwiftUI
 import SwiftData
 
 struct HomeView: View {
-    @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
-
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Query(sort: \VlogAlbum.sortOrder) private var albums: [VlogAlbum]
     @Query(sort: \Clip.recordedAt, order: .reverse) private var allClips: [Clip]
-    @Query private var settingsArray: [UserSettings]
-
     @State private var showNewAlbumSheet = false
 
-    private var settings: UserSettings {
-        settingsArray.first ?? UserSettings()
-    }
-
     private var todayClips: [Clip] {
-        let today = DateHelpers.dayKey(from: Date())
-        return allClips.filter { $0.dayKey == today }
-    }
-
-    private var target: Int {
-        settings.frequency.baselineCountPerDay == 0
-            ? 8
-            : settings.frequency.baselineCountPerDay
-    }
-
-    private var progressFraction: Double {
-        min(1.0, Double(todayClips.count) / Double(max(1, target)))
+        allClips.filter { Calendar.current.isDateInToday($0.recordedAt) }
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: VNSpacing.xxl) {
-                    todayProgress
+                VStack(alignment: .leading, spacing: VNSpacing.xxxl) {
+                    captureHero
+                    dailyNote
                     albumsSection
-                    recordSection
                 }
-                .padding(.horizontal, VNSpacing.lg)
-                .padding(.top, VNSpacing.sm)
-                .padding(.bottom, VNSpacing.huge)
+                .padding(VNSpacing.xxl)
+                .padding(.bottom, VNSpacing.xxl)
             }
             .background(VNColor.dominant)
             .navigationTitle("VlogNudge")
-            .sheet(isPresented: $showNewAlbumSheet) {
-                NewAlbumSheet()
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Image("VlogNudgeMark")
+                        .resizable().scaledToFit()
+                        .frame(width: 30, height: 30)
+                        .accessibilityHidden(true)
+                }
             }
+            .sheet(isPresented: $showNewAlbumSheet) { NewAlbumSheet() }
         }
     }
 
-    // MARK: - Today Progress Ring Card
-
-    private var todayProgress: some View {
-        HStack(spacing: VNSpacing.lg) {
-            VStack(alignment: .leading, spacing: VNSpacing.xs) {
-                HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    Text("\(todayClips.count)")
-                        .font(VNFont.heroNumber)
-                        .foregroundStyle(VNColor.textPrimary)
-                    Text("/\(target)")
-                        .font(VNFont.title3)
-                        .foregroundStyle(VNColor.textTertiary)
+    private var captureHero: some View {
+        VStack(alignment: .leading, spacing: VNSpacing.xl) {
+            Text(Date.now, format: .dateTime.weekday(.wide).month(.abbreviated).day())
+                .font(VNFont.caption)
+                .textCase(.uppercase)
+                .tracking(1.5)
+                .foregroundStyle(VNColor.textSecondary)
+            Text("Keep the\nlittle things.")
+                .font(VNFont.largeTitle)
+                .foregroundStyle(VNColor.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("A few seconds of today, worth keeping.")
+                .font(VNFont.body)
+                .foregroundStyle(VNColor.textSecondary)
+            Button {
+                appState.requestCapture(prompt: nil)
+            } label: {
+                HStack(spacing: VNSpacing.md) {
+                    Image(systemName: "record.circle")
+                        .font(.title2)
+                    Text("Record a moment").font(VNFont.headline)
+                    Spacer(minLength: 0)
+                    Image(systemName: "arrow.up.right")
                 }
-                Text("clips today")
-                    .font(VNFont.caption)
+                .padding(VNSpacing.xl)
+                .foregroundStyle(VNColor.onAccent)
+                .background(VNColor.accent, in: RoundedRectangle(cornerRadius: VNRadius.md))
+            }
+            .buttonStyle(.plain)
+            Label("Saving to \(appState.activeAlbumName)", systemImage: "folder")
+                .font(VNFont.caption)
+                .foregroundStyle(VNColor.textSecondary)
+        }
+    }
+
+    private var dailyNote: some View {
+        HStack(alignment: .top, spacing: VNSpacing.lg) {
+            Text(todayClips.count.formatted())
+                .font(VNFont.heroNumber)
+                .foregroundStyle(VNColor.accent)
+            VStack(alignment: .leading, spacing: VNSpacing.xs) {
+                Text("Moments today").font(VNFont.headline)
+                Text(todayClips.isEmpty ? "Start with something small." : "A little collection of your day.")
+                    .font(VNFont.footnote)
                     .foregroundStyle(VNColor.textSecondary)
             }
-
-            Spacer()
-
-            // Progress ring — accent color
-            ZStack {
-                Circle()
-                    .stroke(VNColor.textTertiary.opacity(0.15), lineWidth: 7)
-                Circle()
-                    .trim(from: 0, to: progressFraction)
-                    .stroke(
-                        VNColor.accent,
-                        style: StrokeStyle(lineWidth: 7, lineCap: .round)
-                    )
-                    .rotationEffect(.degrees(-90))
-                    .animation(.easeInOut(duration: 0.6), value: progressFraction)
-
-                Text("\(Int(progressFraction * 100))%")
-                    .font(VNFont.caption)
-                    .foregroundStyle(VNColor.accent)
-            }
-            .frame(width: 64, height: 64)
+            Spacer(minLength: 0)
         }
-        .vnCard()
+        .foregroundStyle(VNColor.textPrimary)
+        .padding(.vertical, VNSpacing.xl)
+        .overlay(alignment: .top) { Rectangle().fill(VNColor.border).frame(height: 1) }
+        .overlay(alignment: .bottom) { Rectangle().fill(VNColor.border).frame(height: 1) }
+        .accessibilityElement(children: .combine)
     }
 
-    // MARK: - Albums Grid
-
     private var albumsSection: some View {
-        VStack(alignment: .leading, spacing: VNSpacing.md) {
+        VStack(alignment: .leading, spacing: VNSpacing.lg) {
             HStack {
-                Text("Albums")
-                    .font(VNFont.title3)
-                    .foregroundStyle(VNColor.textPrimary)
+                Text("Your collections").font(VNFont.title2)
                 Spacer()
-                Button {
-                    showNewAlbumSheet = true
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title3)
-                        .foregroundStyle(VNColor.accent)
+                Button { showNewAlbumSheet = true } label: {
+                    Image(systemName: "plus")
+                        .font(.headline)
+                        .frame(width: 44, height: 44)
+                        .background(VNColor.secondaryLight, in: Circle())
                 }
+                .accessibilityLabel("Create album")
             }
-
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: VNSpacing.md),
-                    GridItem(.flexible(), spacing: VNSpacing.md)
-                ],
-                spacing: VNSpacing.md
-            ) {
-                ForEach(albums) { album in
-                    AlbumCard(
-                        album: album,
-                        clipCount: allClips.filter { $0.albumName == album.name }.count,
-                        isActive: appState.activeAlbumName == album.name
-                    ) {
-                        withAnimation(.easeInOut(duration: 0.2)) {
+            .foregroundStyle(VNColor.textPrimary)
+            if albums.isEmpty {
+                Text("Your first clips will go into Daily Vlogs. Add a collection for a trip, project, or everyday life.")
+                    .font(VNFont.body)
+                    .foregroundStyle(VNColor.textSecondary)
+            } else {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: dynamicTypeSize.isAccessibilitySize ? 260 : 145), spacing: VNSpacing.md)], spacing: VNSpacing.md) {
+                    ForEach(albums) { album in
+                        AlbumCard(album: album,
+                                  clipCount: allClips.filter { $0.albumName == album.name }.count,
+                                  isActive: appState.activeAlbumName == album.name) {
                             appState.activeAlbumName = album.name
                         }
                     }
@@ -139,41 +124,7 @@ struct HomeView: View {
             }
         }
     }
-
-    // MARK: - Record Button
-
-    private var recordSection: some View {
-        VStack(spacing: VNSpacing.md) {
-            if let album = albums.first(where: { $0.name == appState.activeAlbumName }) {
-                HStack(spacing: VNSpacing.sm) {
-                    Image(systemName: album.systemIcon)
-                        .foregroundStyle(VNColor.accent)
-                    Text("Saving to \(album.name)")
-                        .font(VNFont.subheadline)
-                        .foregroundStyle(VNColor.textSecondary)
-                }
-            }
-
-            Button {
-                appState.requestCapture(prompt: nil)
-            } label: {
-                HStack(spacing: VNSpacing.sm) {
-                    Image(systemName: "video.circle.fill")
-                        .font(.title2)
-                    Text("Record")
-                        .font(VNFont.title3)
-                }
-                .foregroundStyle(VNColor.dominant)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, VNSpacing.xl)
-                .background(VNColor.accent, in: RoundedRectangle(cornerRadius: VNRadius.lg))
-            }
-            .buttonStyle(.plain)
-        }
-    }
 }
-
-// MARK: - Album Card (6:3:1 themed)
 
 struct AlbumCard: View {
     let album: VlogAlbum
@@ -183,35 +134,33 @@ struct AlbumCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: VNSpacing.sm) {
-                Image(systemName: album.systemIcon)
-                    .font(.title)
-                    .foregroundStyle(isActive ? VNColor.accent : VNColor.textSecondary)
-
-                Spacer()
-
-                Text(album.name)
-                    .font(VNFont.headline)
-                    .foregroundStyle(VNColor.textPrimary)
-                    .lineLimit(1)
-
-                Text("\(clipCount) clips")
-                    .font(VNFont.caption)
-                    .foregroundStyle(VNColor.textTertiary)
+            VStack(alignment: .leading, spacing: VNSpacing.lg) {
+                HStack {
+                    Image(systemName: album.systemIcon).font(.title2)
+                    Spacer()
+                    if isActive { Image(systemName: "checkmark.circle.fill") }
+                }
+                .foregroundStyle(VNColor.accent)
+                VStack(alignment: .leading, spacing: VNSpacing.xs) {
+                    Text(album.name).font(VNFont.headline)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .foregroundStyle(VNColor.textPrimary)
+                    Text("\(clipCount) clips").font(VNFont.caption)
+                        .foregroundStyle(VNColor.textSecondary)
+                }
             }
-            .padding(VNSpacing.lg)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: 140)
-            .background(
-                isActive ? VNColor.secondaryLight : VNColor.secondary,
-                in: RoundedRectangle(cornerRadius: VNRadius.lg)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: VNRadius.lg)
-                    .stroke(isActive ? VNColor.accent : .clear, lineWidth: 2)
-            )
+            .padding(VNSpacing.xl)
+            .frame(maxWidth: .infinity, minHeight: 150, alignment: .topLeading)
+            .background(isActive ? VNColor.secondaryLight : VNColor.secondary,
+                        in: RoundedRectangle(cornerRadius: VNRadius.md))
+            .overlay {
+                RoundedRectangle(cornerRadius: VNRadius.md)
+                    .strokeBorder(isActive ? VNColor.accent : VNColor.border, lineWidth: 1)
+            }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(album.name), \(clipCount) clips\(isActive ? ", active" : "")")
+        .accessibilityLabel("\(album.name), \(clipCount) clips")
+        .accessibilityValue(isActive ? "Selected for recording" : "")
+        .accessibilityHint("Select this album for new recordings")
     }
 }

@@ -117,7 +117,7 @@ A few decisions worth calling out:
 
 - **Decision logic is a pure function.** Keeping `NudgeScorer` free of side effects makes the "why did/didn't it nudge?" question answerable from inputs alone.
 - **Local notifications are the source of truth**, not background execution. Background refresh is treated as best-effort top-up, not a dependency.
-- **SwiftData + CloudKit constraints are respected** — every `@Model` property has a default value (a hard requirement for the CloudKit mirror), and the container recreates a fresh store rather than crashing on an incompatible schema during development.
+- **SwiftData + CloudKit constraints are respected** — every `@Model` property has a default value (a hard requirement for the CloudKit mirror), and initialization failures preserve the existing store instead of deleting user data. A recovery screen and explicit migrations remain follow-up work.
 - **No punishment-red in the UI.** Pace tops out at a warm orange — a deliberate, ADHD-friendly tone choice documented in the [widget handoff spec](widget/HANDOFF.md).
 
 ## Roadmap
@@ -131,3 +131,4 @@ Natural extensions beyond the current build:
 ## License
 
 VlogNudge is proprietary — see [LICENSE](LICENSE). The source is public for reference and portfolio purposes; all rights are reserved.
+

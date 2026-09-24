@@ -158,7 +158,7 @@ struct TodayView: View {
                 Text("Record now")
                     .font(VNFont.title3)
             }
-            .foregroundStyle(VNColor.dominant)
+            .foregroundStyle(VNColor.onAccent)
             .frame(maxWidth: .infinity)
             .padding(.vertical, VNSpacing.xl)
             .background(VNColor.accent, in: RoundedRectangle(cornerRadius: VNRadius.lg))
@@ -269,3 +269,4 @@ struct ClipThumb: View {
         }
     }
 }
+

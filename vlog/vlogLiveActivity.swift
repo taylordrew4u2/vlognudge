@@ -16,7 +16,7 @@ import SwiftUI
 
 // Widget-local palette — keep in sync with VNColor in DesignTokens.swift
 private enum WidgetColor {
-    static let accent = Color(red: 193/255, green: 41/255, blue: 46/255)  // Flag Red #C1292E
+    static let accent = Color(red: 23/255, green: 102/255, blue: 91/255)  // Field Notes teal #17665B
 }
 
 // MARK: - Helpers
@@ -245,3 +245,4 @@ extension VlogNudgeActivityAttributes.State {
     VlogNudgeActivityAttributes.State.onTrack
     VlogNudgeActivityAttributes.State.behind
 }
+

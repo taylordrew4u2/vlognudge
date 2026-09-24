@@ -11,10 +11,10 @@ import AVFoundation
 
 enum PhotosService {
 
-    /// Request write-add authorization.
+    /// Albums and in-app playback need read/write access; limited access is supported.
     static func requestAuthorization() async -> PHAuthorizationStatus {
         await withCheckedContinuation { continuation in
-            PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+            PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
                 continuation.resume(returning: status)
             }
         }
@@ -58,7 +58,20 @@ enum PhotosService {
     /// Save a video file to the album, return the asset's localIdentifier.
     @discardableResult
     static func saveVideo(at fileURL: URL, toAlbumNamed name: String = AppConstants.photosAlbumName) async throws -> String {
-        let album = try await findOrCreateAlbum(named: name)
+        let status = await requestAuthorization()
+        guard status == .authorized || status == .limited ||
+                PHPhotoLibrary.authorizationStatus(for: .addOnly) == .authorized else {
+            throw NSError(domain: "PhotosService", code: -4,
+                          userInfo: [NSLocalizedDescriptionKey: "Allow Photos access in Settings to save your clip. Your recording is still available to retry."])
+        }
+        // Limited access cannot manage user albums. Save to Photos and keep the
+        // collection association in SwiftData instead of failing the recording.
+        let album: PHAssetCollection?
+        if status == .authorized {
+            album = try await findOrCreateAlbum(named: name)
+        } else {
+            album = nil
+        }
 
         var localID: String?
 
@@ -69,7 +82,7 @@ enum PhotosService {
             }
             localID = placeholder.localIdentifier
 
-            if let albumRequest = PHAssetCollectionChangeRequest(for: album) {
+            if let album, let albumRequest = PHAssetCollectionChangeRequest(for: album) {
                 albumRequest.addAssets([placeholder] as NSArray)
             }
         }
@@ -96,3 +109,4 @@ enum PhotosService {
         }
     }
 }
+

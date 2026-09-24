@@ -178,23 +178,30 @@ final class NotificationService {
 
     /// Cancel nudges scheduled after a specific date (e.g., when user just filmed,
     /// push future nudges back).
-    func cancelNudges(after date: Date) async {
+    func cancelNudges(after date: Date, before endDate: Date? = nil) async {
         let center = UNUserNotificationCenter.current()
         let pending = await center.pendingNotificationRequests()
-        let toCancel = pending.compactMap { request -> String? in
-            guard request.content.categoryIdentifier == AppConstants.notificationCategoryID,
-                  let trigger = request.trigger as? UNCalendarNotificationTrigger,
-                  let next = trigger.nextTriggerDate(),
-                  next > date
-            else { return nil }
-            return request.identifier
-        }
+        let toCancel = pending.filter {
+            Self.shouldCancel($0, after: date, before: endDate)
+        }.map(\.identifier)
         center.removePendingNotificationRequests(withIdentifiers: toCancel)
     }
 
     /// Clear delivered notifications when user films (they're no longer relevant).
     func clearDeliveredNudges() {
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+    }
+
+    static func shouldCancel(_ request: UNNotificationRequest, after date: Date, before endDate: Date?) -> Bool {
+        guard request.content.categoryIdentifier == AppConstants.notificationCategoryID,
+              let next = nextFireDate(for: request.trigger), next > date else { return false }
+        return endDate.map { next < $0 } ?? true
+    }
+
+    private static func nextFireDate(for trigger: UNNotificationTrigger?) -> Date? {
+        if let calendar = trigger as? UNCalendarNotificationTrigger { return calendar.nextTriggerDate() }
+        if let interval = trigger as? UNTimeIntervalNotificationTrigger { return interval.nextTriggerDate() }
+        return nil
     }
 
     // MARK: - Helpers
@@ -208,3 +215,4 @@ final class NotificationService {
         return pending.filter { $0.content.categoryIdentifier == AppConstants.notificationCategoryID }.count
     }
 }
+

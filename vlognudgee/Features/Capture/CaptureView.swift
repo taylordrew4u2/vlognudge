@@ -12,6 +12,7 @@ import os
 
 struct CaptureView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
     @State private var recordingService = RecordingService.shared
@@ -20,6 +21,14 @@ struct CaptureView: View {
     @State private var showPostRecord = false
     @State private var lastSavedClip: Clip?
     @State private var autoDismissTask: Task<Void, Never>?
+    @State private var isSettingUp = false
+    @State private var isReady = false
+    @State private var isBusy = false
+    @State private var isStarting = false
+    @State private var captureError: String?
+    @State private var pendingRecording: RecordingService.RecordingResult?
+    @State private var savedAssetID: String?
+    @State private var pendingClip: Clip?
 
     let initialPrompt: String?
 
@@ -64,11 +73,38 @@ struct CaptureView: View {
             }
         }
         .statusBarHidden()
+        .alert("Capture needs attention", isPresented: Binding(
+            get: { captureError != nil }, set: { if !$0 { captureError = nil } }
+        )) {
+            if pendingRecording != nil {
+                Button("Retry saving") { savePendingRecording() }
+            }
+            Button("Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(captureError ?? "")
+        }
         .task {
             await setUp()
         }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active, !isReady, !isBusy {
+                Task { await setUp() }
+            } else if phase == .background, recordingService.isRecording {
+                isBusy = true
+                recordingService.stopRecording()
+                recordingTimer?.invalidate()
+            }
+        }
         .onDisappear {
             autoDismissTask?.cancel()
+            recordingTimer?.invalidate()
+            recordingTimer = nil
+            if recordingService.isRecording { recordingService.stopRecording() }
             recordingService.stopSession()
         }
     }
@@ -76,10 +112,24 @@ struct CaptureView: View {
     // MARK: - Setup
 
     private func setUp() async {
+        guard !isSettingUp, !isReady else { return }
+        isSettingUp = true
+        defer { isSettingUp = false }
         let granted = await recordingService.requestPermissions()
-        guard granted else { return }
-        await recordingService.configureSession()
-        recordingService.startSession()
+        guard !Task.isCancelled else { return }
+        guard granted else {
+            captureError = "Allow Camera and Microphone access in Settings to record a clip."
+            return
+        }
+        do {
+            try await recordingService.configureSession()
+            guard !Task.isCancelled else { return }
+            isReady = await recordingService.startSession()
+            if Task.isCancelled { recordingService.stopSession(); return }
+            if !isReady { captureError = "The camera could not start. Close capture and try again." }
+        } catch {
+            captureError = error.localizedDescription
+        }
     }
 
     // MARK: - Top Bar
@@ -95,6 +145,9 @@ struct CaptureView: View {
                     .padding(VNSpacing.md)
                     .background(.black.opacity(0.4), in: Circle())
             }
+
+            .disabled(recordingService.isRecording || isStarting || isBusy)
+            .accessibilityLabel("Close camera")
 
             Spacer()
 
@@ -118,6 +171,8 @@ struct CaptureView: View {
                     .padding(VNSpacing.md)
                     .background(.black.opacity(0.4), in: Circle())
             }
+            .disabled(!isReady || recordingService.isRecording || isStarting || isBusy)
+            .accessibilityLabel("Switch camera")
         }
     }
 
@@ -129,7 +184,7 @@ struct CaptureView: View {
             .foregroundStyle(.white)
             .padding(.horizontal, VNSpacing.lg)
             .padding(.vertical, VNSpacing.md)
-            .background(VNColor.secondary.opacity(0.8), in: Capsule())
+            .background(.black.opacity(0.65), in: Capsule())
             .padding(.horizontal, VNSpacing.xxxl)
             .multilineTextAlignment(.center)
     }
@@ -138,6 +193,13 @@ struct CaptureView: View {
 
     private var bottomBar: some View {
         VStack(spacing: VNSpacing.lg) {
+            if isBusy {
+                ProgressView("Saving your moment…").tint(.white).foregroundStyle(.white)
+            } else if pendingRecording != nil {
+                Button("Retry saving clip") { savePendingRecording() }
+                    .buttonStyle(.borderedProminent)
+                    .tint(VNColor.accent)
+            }
             if recordingService.isRecording {
                 HStack(spacing: VNSpacing.sm) {
                     Circle()
@@ -176,9 +238,23 @@ struct CaptureView: View {
                 }
             }
             .buttonStyle(.plain)
+            .disabled(!isReady || isStarting || isBusy || pendingRecording != nil)
+            .opacity(isReady && !isBusy ? 1 : 0.45)
             .accessibilityLabel(recordingService.isRecording ? "Stop recording" : "Start recording")
         }
         .padding(.bottom, VNSpacing.xl)
+        .onChange(of: recordingService.isRecording) { _, recording in
+            isStarting = false
+            if recording {
+                recordingTimer?.invalidate()
+                recordingTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+                    elapsedSeconds += 1
+                }
+            } else {
+                recordingTimer?.invalidate()
+                recordingTimer = nil
+            }
+        }
     }
 
     // MARK: - Post Record Overlay
@@ -219,56 +295,73 @@ struct CaptureView: View {
     // MARK: - Actions
 
     private func toggleRecording() {
+        guard isReady, !isBusy, !isStarting else { return }
         if recordingService.isRecording {
+            isBusy = true
             recordingService.stopRecording()
             recordingTimer?.invalidate()
         } else {
             elapsedSeconds = 0
+            isStarting = true
             recordingService.startRecording { result in
-                Task { @MainActor in
-                    handleRecordingFinished(result: result)
-                }
-            }
-            recordingTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-                elapsedSeconds += 1
+                Task { @MainActor in handleRecordingFinished(result: result) }
             }
         }
     }
 
     @MainActor
     private func handleRecordingFinished(result: Result<RecordingService.RecordingResult, Error>) {
+        recordingTimer?.invalidate()
+        recordingTimer = nil
+        isStarting = false
         switch result {
-        case .success(let rec):
-            Task {
-                do {
-                    let albumName = appState.activeAlbumName
-                    let assetID = try await PhotosService.saveVideo(at: rec.fileURL, toAlbumNamed: albumName)
-                    let clip = Clip(
-                        recordedAt: rec.startDate,
-                        duration: rec.duration,
-                        photosAssetID: assetID,
-                        topicPrompt: initialPrompt,
-                        albumName: albumName
-                    )
+        case .success(let recording):
+            pendingRecording = recording
+            savePendingRecording()
+        case .failure(let error):
+            isBusy = false
+            captureError = error.localizedDescription
+            Logger.capture.error("Recording failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    @MainActor
+    private func savePendingRecording() {
+        guard let rec = pendingRecording else { return }
+        isBusy = true
+        Task { @MainActor in
+            defer { isBusy = false }
+            do {
+                let albumName = appState.activeAlbumName
+                if savedAssetID == nil {
+                    savedAssetID = try await PhotosService.saveVideo(at: rec.fileURL, toAlbumNamed: albumName)
+                }
+                guard let assetID = savedAssetID else { return }
+                // Retain these references on failure so Retry cannot duplicate the
+                // Photos asset or insert the same Clip twice.
+                if pendingClip == nil {
+                    let clip = Clip(recordedAt: rec.startDate, duration: rec.duration,
+                                    photosAssetID: assetID, topicPrompt: initialPrompt, albumName: albumName)
                     modelContext.insert(clip)
-                    try modelContext.save()
-                    lastSavedClip = clip
-
-                    await NudgeScheduler.shared.clipWasFilmed(context: modelContext)
-
-                    withAnimation { showPostRecord = true }
-                    autoDismissTask = Task {
-                        try? await Task.sleep(nanoseconds: 2_000_000_000)
-                        guard !Task.isCancelled else { return }
-                        dismiss()
-                    }
-                } catch {
-                    Logger.capture.error("Failed to save clip: \(error.localizedDescription, privacy: .public)")
+                    pendingClip = clip
+                }
+                try modelContext.save()
+                lastSavedClip = pendingClip
+                pendingClip = nil
+                pendingRecording = nil
+                savedAssetID = nil
+                try? FileManager.default.removeItem(at: rec.fileURL)
+                await NudgeScheduler.shared.clipWasFilmed(context: modelContext)
+                withAnimation { showPostRecord = true }
+                autoDismissTask = Task {
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                    guard !Task.isCancelled else { return }
                     dismiss()
                 }
+            } catch {
+                captureError = "Your clip could not finish saving. It is kept for retry while this screen stays open. " + error.localizedDescription
+                Logger.capture.error("Failed to save clip: \(error.localizedDescription, privacy: .public)")
             }
-        case .failure(let error):
-            Logger.capture.error("Recording failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -316,3 +409,4 @@ struct CameraPreviewView: UIViewRepresentable {
         }
     }
 }
+

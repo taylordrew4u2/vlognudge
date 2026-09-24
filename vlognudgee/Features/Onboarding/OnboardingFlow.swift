@@ -37,7 +37,7 @@ struct OnboardingFlow: View {
                                         action: requestCameraAndMic,
                                         required: true)
                 case 4:  permissionStep(title: "Photos",
-                                        body: "Clips save to a Daily Vlogs album for CapCut.",
+                                        body: "Clips save to Photos. Full access also lets us organize them into a Daily Vlogs album; limited access keeps collections inside VlogNudge.",
                                         icon: "photo.on.rectangle",
                                         action: requestPhotos,
                                         required: true)
@@ -75,6 +75,7 @@ struct OnboardingFlow: View {
             bottomButtons
                 .padding()
         }
+        .background(VNColor.dominant)
         .tint(VNColor.accent)
     }
 
@@ -82,11 +83,12 @@ struct OnboardingFlow: View {
 
     private var valueProp: some View {
         VStack(spacing: 24) {
-            Image(systemName: "video.fill")
-                .font(.system(size: 80))
+            Image("VlogNudgeMark")
+                .resizable().scaledToFit()
+                .frame(width: 100, height: 100)
                 .foregroundStyle(VNColor.accent)
             Text("VlogNudge")
-                .font(.largeTitle.bold())
+                .font(VNFont.largeTitle)
             Text("Film a day-in-the-life without remembering to. The app watches context and nudges when it's actually a good moment.")
                 .font(.title3)
                 .multilineTextAlignment(.center)
@@ -157,7 +159,7 @@ struct OnboardingFlow: View {
                 .font(.system(size: 64))
                 .foregroundStyle(VNColor.accent)
             Text(title)
-                .font(.largeTitle.bold())
+                .font(VNFont.largeTitle)
             Text(body)
                 .font(.title3)
                 .multilineTextAlignment(.center)
@@ -172,7 +174,7 @@ struct OnboardingFlow: View {
             } label: {
                 Text("Allow")
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(VNColor.onAccent)
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(VNColor.accent, in: RoundedRectangle(cornerRadius: 12))
@@ -194,7 +196,7 @@ struct OnboardingFlow: View {
                 .font(.system(size: 64))
                 .foregroundStyle(VNColor.accent)
             Text("Add a Lock Screen widget")
-                .font(.largeTitle.bold())
+                .font(VNFont.largeTitle)
             Text("The widget shows your next nudge and today's progress. It's a big part of how the app works.")
                 .font(.title3)
                 .multilineTextAlignment(.center)
@@ -217,7 +219,7 @@ struct OnboardingFlow: View {
                 .foregroundStyle(VNColor.accent)
 
             Text("You're all set")
-                .font(.largeTitle.bold())
+                .font(VNFont.largeTitle)
 
             Text("VlogNudge will start sending you nudges at the right moments. Just tap and film.")
                 .font(.title3)
@@ -235,7 +237,7 @@ struct OnboardingFlow: View {
             } label: {
                 Text("Start Vlogging")
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(VNColor.onAccent)
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(VNColor.accent, in: RoundedRectangle(cornerRadius: 14))
@@ -330,3 +332,4 @@ struct OnboardingFlow: View {
         )
     }
 }
+
