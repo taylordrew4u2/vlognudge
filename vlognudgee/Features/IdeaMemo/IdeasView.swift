@@ -104,7 +104,7 @@ struct IdeasView: View {
                 Text("New idea")
             }
             .font(VNFont.headline)
-            .foregroundStyle(VNColor.dominant)
+            .foregroundStyle(VNColor.onAccent)
             .frame(maxWidth: .infinity)
             .padding(.vertical, VNSpacing.lg)
             .background(VNColor.accent, in: RoundedRectangle(cornerRadius: VNRadius.lg))
@@ -241,3 +241,4 @@ struct IdeaEditorView: View {
         dismiss()
     }
 }
+

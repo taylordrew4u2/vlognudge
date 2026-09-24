@@ -1,79 +1,57 @@
-//
-//  DesignTokens.swift
-//  VlogNudge
-//
-//  6:3:1 Color System + ADHD-optimized design tokens.
-//  Dominant 60% → backgrounds, canvas, status bar
-//  Secondary 30% → cards, nav, headers, panels
-//  Accent 10% → CTAs, icons, active states, progress
-//
-
 import SwiftUI
+import UIKit
 
-// MARK: - Color Palette
-
-// Brand palette — Porcelain · Baltic Blue · Flag Red · Bright Gold · Shadow Grey.
-// Flag Red is the primary accent (record-forward); Shadow Grey anchors the dark
-// canvas, Porcelain carries text, Bright Gold highlights, Baltic Blue supports.
+// Field Notes: warm paper, deep teal and restrained terracotta.
+// Dynamic UIColors keep native bars and SwiftUI surfaces in the same appearance.
 enum VNColor {
-    // Brand swatches
-    static let porcelain  = Color(hex: "FDFFFC")
-    static let balticBlue = Color(hex: "235789")
-    static let flagRed    = Color(hex: "C1292E")
-    static let brightGold = Color(hex: "F1D302")
-    static let shadowGrey = Color(hex: "161925")
+    private static func adaptive(_ light: String, _ dark: String) -> Color {
+        let day = UIColor(Color(hex: light))
+        let night = UIColor(Color(hex: dark))
+        return Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? night : day })
+    }
 
-    // 60% — Dominant: main backgrounds, screens, canvas
-    static let dominant = shadowGrey
-    static let dominantLight = Color(hex: "1E2433")
+    static let porcelain = Color(hex: "F5F2EA")
+    static let balticBlue = Color(hex: "17665B")
+    static let flagRed = Color(hex: "B53D38")
+    static let brightGold = Color(hex: "C96B43")
+    static let shadowGrey = Color(hex: "182F2C")
 
-    // 30% — Secondary: cards, navigation, headers, panels
-    static let secondary = Color(hex: "212838")
-    static let secondaryLight = Color(hex: "2B3346")
-
-    // 10% — Accent: CTAs, active borders, icons, progress, links
-    static let accent = flagRed
-    static let accentDim = accent.opacity(0.15)
-    static let accentGlow = accent.opacity(0.3)
-
-    // Text hierarchy on the dark canvas (Porcelain)
-    static let textPrimary = porcelain
-    static let textSecondary = porcelain.opacity(0.6)
-    static let textTertiary = porcelain.opacity(0.4)
-
-    // Semantic colors
-    static let success = balticBlue
-    static let warning = brightGold
-    static let destructive = flagRed
-
-    // Supporting accents (available for highlights / secondary actions)
-    static let highlight = brightGold
-    static let secondaryAccent = balticBlue
-
-    // Surface for elevated elements (sheets, overlays)
+    static let dominant = adaptive("F5F2EA", "101F1C")
+    static let dominantLight = adaptive("EBEDE5", "172B26")
+    static let secondary = adaptive("FFFFFF", "1B302A")
+    static let secondaryLight = adaptive("E4EBE3", "29443B")
+    static let accent = adaptive("17665B", "94D8BF")
+    static let onAccent = adaptive("FFFFFF", "102D24")
+    static let accentDim = accent.opacity(0.10)
+    static let accentGlow = accent.opacity(0.20)
+    static let textPrimary = adaptive("182F2C", "F5F2EA")
+    static let textSecondary = adaptive("536660", "B7C9BF")
+    static let textTertiary = adaptive("5B6B64", "A0B5AA")
+    static let border = adaptive("D8DDD5", "365046")
+    static let success = accent
+    static let warning = adaptive("91501F", "F1BB80")
+    static let destructive = adaptive("B53D38", "FF9B93")
+    static let highlight = adaptive("A24E2B", "EAA37F")
+    static let secondaryAccent = accent
     static let surface = secondary
     static let surfaceElevated = secondaryLight
 }
 
-// MARK: - Typography Presets
-
 enum VNFont {
-    static let largeTitle = Font.system(size: 34, weight: .bold, design: .rounded)
-    static let title = Font.system(size: 28, weight: .bold, design: .rounded)
-    static let title2 = Font.system(size: 22, weight: .bold, design: .rounded)
-    static let title3 = Font.system(size: 20, weight: .semibold, design: .rounded)
-    static let headline = Font.system(size: 17, weight: .semibold, design: .rounded)
-    static let body = Font.system(size: 17, weight: .regular, design: .rounded)
-    static let callout = Font.system(size: 16, weight: .regular, design: .rounded)
-    static let subheadline = Font.system(size: 15, weight: .medium, design: .rounded)
-    static let footnote = Font.system(size: 13, weight: .regular, design: .rounded)
-    static let caption = Font.system(size: 12, weight: .medium, design: .rounded)
-    static let caption2 = Font.system(size: 11, weight: .regular, design: .rounded)
-    static let heroNumber = Font.system(size: 48, weight: .heavy, design: .rounded)
-    static let bigTime = Font.system(size: 44, weight: .bold, design: .rounded)
+    static let largeTitle = Font.system(.largeTitle, design: .serif).weight(.semibold)
+    static let title = Font.system(.title, design: .serif).weight(.semibold)
+    static let title2 = Font.system(.title2, design: .serif).weight(.semibold)
+    static let title3 = Font.system(.title3).weight(.semibold)
+    static let headline = Font.headline
+    static let body = Font.body
+    static let callout = Font.callout
+    static let subheadline = Font.subheadline.weight(.medium)
+    static let footnote = Font.footnote
+    static let caption = Font.caption.weight(.medium)
+    static let caption2 = Font.caption2
+    static let heroNumber = Font.system(.largeTitle, design: .serif).weight(.bold)
+    static let bigTime = Font.system(.largeTitle, design: .rounded).weight(.semibold)
 }
-
-// MARK: - Spacing (8pt grid for ADHD-friendly rhythm)
 
 enum VNSpacing {
     static let xs: CGFloat = 4
@@ -86,26 +64,25 @@ enum VNSpacing {
     static let huge: CGFloat = 48
 }
 
-// MARK: - Corner Radius
-
 enum VNRadius {
     static let sm: CGFloat = 8
-    static let md: CGFloat = 12
-    static let lg: CGFloat = 16
-    static let xl: CGFloat = 20
+    static let md: CGFloat = 16
+    static let lg: CGFloat = 24
+    static let xl: CGFloat = 28
     static let full: CGFloat = 999
 }
-
-// MARK: - Reusable Card Modifier
 
 struct VNCardModifier: ViewModifier {
     var padding: CGFloat = VNSpacing.lg
     var cornerRadius: CGFloat = VNRadius.lg
-
     func body(content: Content) -> some View {
         content
             .padding(padding)
             .background(VNColor.secondary, in: RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .strokeBorder(VNColor.border.opacity(0.6), lineWidth: 1)
+            }
     }
 }
 
@@ -114,5 +91,3 @@ extension View {
         modifier(VNCardModifier(padding: padding, cornerRadius: cornerRadius))
     }
 }
-
-

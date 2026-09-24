@@ -16,7 +16,7 @@ struct RootView: View {
     private var hasCompletedOnboarding: Bool = false
 
     init() {
-        // Theme the UIKit-backed tab bar to match 6:3:1 palette
+        // Theme the UIKit-backed tab bar to match adaptive Field Notes palette
         let tabAppearance = UITabBarAppearance()
         tabAppearance.configureWithOpaqueBackground()
         tabAppearance.backgroundColor = UIColor(VNColor.secondary)
@@ -24,9 +24,9 @@ struct RootView: View {
 
         // Normal state
         let normalAttrs: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.white.withAlphaComponent(0.38)
+            .foregroundColor: UIColor(VNColor.textSecondary)
         ]
-        tabAppearance.stackedLayoutAppearance.normal.iconColor = UIColor.white.withAlphaComponent(0.38)
+        tabAppearance.stackedLayoutAppearance.normal.iconColor = UIColor(VNColor.textSecondary)
         tabAppearance.stackedLayoutAppearance.normal.titleTextAttributes = normalAttrs
 
         // Selected state — accent color
@@ -43,8 +43,8 @@ struct RootView: View {
         let navAppearance = UINavigationBarAppearance()
         navAppearance.configureWithOpaqueBackground()
         navAppearance.backgroundColor = UIColor(VNColor.dominant)
-        navAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
-        navAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        navAppearance.titleTextAttributes = [.foregroundColor: UIColor(VNColor.textPrimary)]
+        navAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor(VNColor.textPrimary)]
         navAppearance.shadowColor = .clear
         UINavigationBar.appearance().standardAppearance = navAppearance
         UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
@@ -60,7 +60,6 @@ struct RootView: View {
                 OnboardingFlow()
             }
         }
-        .preferredColorScheme(.dark)
         .fullScreenCover(isPresented: $showCapture) {
             CaptureView(initialPrompt: appState.currentPrompt)
         }
@@ -140,3 +139,4 @@ struct RootView: View {
         }
     }
 }
+

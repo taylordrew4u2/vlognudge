@@ -42,7 +42,7 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>VlogNudge saves recorded clips to your Daily Vlogs album in Photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>VlogNudge accesses clips it saved so you can play them back in the app.</string>
+	<string>VlogNudge accesses recorded clips for playback and organizes them into your selected Photos albums.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
@@ -51,3 +51,4 @@
 	</array>
 </dict>
 </plist>
+

@@ -36,15 +36,8 @@ enum SharedModelContainer {
         do {
             return try ModelContainer(for: schema, configurations: [config])
         } catch {
-            // If the store is incompatible, delete and recreate rather than crashing.
-            // Acceptable pre-launch; replace with proper migration once shipping.
-            Logger.persistence.error("ModelContainer init failed: \(error.localizedDescription, privacy: .public). Resetting store.")
-            try? FileManager.default.removeItem(at: groupContainerURL)
-            do {
-                return try ModelContainer(for: schema, configurations: [config])
-            } catch {
-                fatalError("Failed to initialize shared ModelContainer after reset: \(error)")
-            }
+            Logger.persistence.error("ModelContainer init failed: \(error.localizedDescription, privacy: .public). Existing store preserved.")
+            fatalError("Unable to open VlogNudge data. The existing store has been preserved: \(error)")
         }
     }()
 
@@ -55,3 +48,4 @@ enum SharedModelContainer {
         ModelContext(shared)
     }
 }
+

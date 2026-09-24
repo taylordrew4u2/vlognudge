@@ -17,7 +17,7 @@ final class RecordingService: NSObject, @unchecked Sendable {
     static let shared = RecordingService()
 
     // Published state
-    private var isSessionRunning = false
+    private var isConfigured = false
     var isRecording = false
 
     // AVCapture components
@@ -57,17 +57,29 @@ final class RecordingService: NSObject, @unchecked Sendable {
 
     // MARK: - Session Setup
 
-    func configureSession() async {
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            sessionQueue.async { [weak self] in
-                self?.configureSessionInternal()
-                continuation.resume()
+    func configureSession() async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            sessionQueue.async {
+                do {
+                    try self.configureSessionInternal()
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
             }
         }
     }
 
-    private func configureSessionInternal() {
+    private func configureSessionInternal() throws {
+        guard !isConfigured else { return }
         captureSession.beginConfiguration()
+        defer { captureSession.commitConfiguration() }
+        // Clean up a partial failed configuration before retrying.
+        captureSession.inputs.forEach { captureSession.removeInput($0) }
+        captureSession.outputs.forEach { captureSession.removeOutput($0) }
+        videoDeviceInput = nil
+        audioDeviceInput = nil
+        currentPosition = .back
         captureSession.sessionPreset = .hd1920x1080
 
         // Video input
@@ -111,14 +123,22 @@ final class RecordingService: NSObject, @unchecked Sendable {
             }
         }
 
-        captureSession.commitConfiguration()
+        guard videoDeviceInput != nil, audioDeviceInput != nil,
+              captureSession.outputs.contains(where: { $0 === movieOutput }) else {
+            throw NSError(domain: "RecordingService", code: 1,
+                          userInfo: [NSLocalizedDescriptionKey: "The camera or microphone is unavailable. Try again on your iPhone."])
+        }
+        isConfigured = true
     }
 
-    func startSession() {
-        sessionQueue.async { [weak self] in
-            guard let self, !self.captureSession.isRunning else { return }
-            self.captureSession.startRunning()
-            DispatchQueue.main.async { self.isSessionRunning = true }
+    func startSession() async -> Bool {
+        await withCheckedContinuation { continuation in
+            sessionQueue.async {
+                if self.isConfigured && !self.captureSession.isRunning {
+                    self.captureSession.startRunning()
+                }
+                continuation.resume(returning: self.captureSession.isRunning)
+            }
         }
     }
 
@@ -126,7 +146,6 @@ final class RecordingService: NSObject, @unchecked Sendable {
         sessionQueue.async { [weak self] in
             guard let self, self.captureSession.isRunning else { return }
             self.captureSession.stopRunning()
-            DispatchQueue.main.async { self.isSessionRunning = false }
         }
     }
 
@@ -134,7 +153,8 @@ final class RecordingService: NSObject, @unchecked Sendable {
 
     func flipCamera() {
         sessionQueue.async { [weak self] in
-            guard let self, let currentInput = self.videoDeviceInput else { return }
+            guard let self, !self.movieOutput.isRecording, self.completionHandler == nil,
+                  let currentInput = self.videoDeviceInput else { return }
             self.captureSession.beginConfiguration()
             self.captureSession.removeInput(currentInput)
 
@@ -151,9 +171,7 @@ final class RecordingService: NSObject, @unchecked Sendable {
                     if self.captureSession.canAddInput(newInput) {
                         self.captureSession.addInput(newInput)
                         self.videoDeviceInput = newInput
-                        DispatchQueue.main.async {
-                            self.currentPosition = (newPosition == .back) ? .back : .front
-                        }
+                        self.currentPosition = (newPosition == .back) ? .back : .front
                     } else {
                         self.captureSession.addInput(currentInput)
                     }
@@ -179,7 +197,14 @@ final class RecordingService: NSObject, @unchecked Sendable {
     func startRecording(completion: @escaping (Result<RecordingResult, Error>) -> Void) {
         sessionQueue.async { [weak self] in
             guard let self else { return }
-            guard !self.movieOutput.isRecording else { return }
+            guard !self.movieOutput.isRecording, self.completionHandler == nil else { return }
+            guard self.isConfigured, self.captureSession.isRunning else {
+                DispatchQueue.main.async {
+                    completion(.failure(NSError(domain: "RecordingService", code: 2,
+                        userInfo: [NSLocalizedDescriptionKey: "The camera is not ready. Close capture and try again."])))
+                }
+                return
+            }
 
             let tempDir = FileManager.default.temporaryDirectory
             let filename = "vlog-\(UUID().uuidString).mov"
@@ -191,7 +216,6 @@ final class RecordingService: NSObject, @unchecked Sendable {
 
             self.movieOutput.startRecording(to: url, recordingDelegate: self)
 
-            DispatchQueue.main.async { self.isRecording = true }
         }
     }
 
@@ -207,29 +231,36 @@ final class RecordingService: NSObject, @unchecked Sendable {
 
 extension RecordingService: AVCaptureFileOutputRecordingDelegate {
     func fileOutput(_ output: AVCaptureFileOutput,
+                    didStartRecordingTo fileURL: URL,
+                    from connections: [AVCaptureConnection]) {
+        DispatchQueue.main.async { self.isRecording = true }
+    }
+
+    func fileOutput(_ output: AVCaptureFileOutput,
                     didFinishRecordingTo outputFileURL: URL,
                     from connections: [AVCaptureConnection],
                     error: Error?) {
 
-        DispatchQueue.main.async { self.isRecording = false }
-
-        guard let startDate = recordingStartDate else { return }
-        let duration = Date().timeIntervalSince(startDate)
-
-        if let error = error as NSError?,
-           error.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool != true {
-            completionHandler?(.failure(error))
-        } else {
-            let result = RecordingResult(
-                fileURL: outputFileURL,
-                startDate: startDate,
-                duration: duration
-            )
-            completionHandler?(.success(result))
+        // All session state is owned by sessionQueue; deliver the result on main.
+        sessionQueue.async {
+            let completion = self.completionHandler
+            let startDate = self.recordingStartDate ?? Date()
+            let duration = max(0, CMTimeGetSeconds(output.recordedDuration))
+            let result: Result<RecordingResult, Error>
+            if let error = error as NSError?,
+               error.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool != true {
+                result = .failure(error)
+            } else {
+                result = .success(RecordingResult(fileURL: outputFileURL,
+                    startDate: startDate, duration: duration.isFinite ? duration : 0))
+            }
+            self.completionHandler = nil
+            self.recordingStartDate = nil
+            self.currentRecordingURL = nil
+            DispatchQueue.main.async {
+                self.isRecording = false
+                completion?(result)
+            }
         }
-
-        completionHandler = nil
-        recordingStartDate = nil
-        currentRecordingURL = nil
     }
 }

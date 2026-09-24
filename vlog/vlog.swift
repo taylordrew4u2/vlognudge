@@ -11,8 +11,8 @@ import SwiftUI
 
 // Widget-local palette — keep in sync with VNColor in DesignTokens.swift
 private enum WidgetColor {
-    static let accent = Color(red: 193/255, green: 41/255, blue: 46/255)       // Flag Red #C1292E
-    static let secondaryAction = Color(red: 33/255, green: 40/255, blue: 56/255).opacity(0.85)  // #212838
+    static let accent = Color(red: 23/255, green: 102/255, blue: 91/255)       // Field Notes teal #17665B
+    static let secondaryAction = Color(red: 27/255, green: 48/255, blue: 42/255).opacity(0.85)  // #1B302A
 }
 
 // MARK: - Timeline Entry
@@ -394,3 +394,4 @@ struct VlogNudgeWidget: Widget {
 } timeline: {
     VlogNudgeEntry.placeholder
 }
+

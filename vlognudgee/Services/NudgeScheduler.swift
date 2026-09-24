@@ -36,6 +36,7 @@ final class NudgeScheduler {
 
         // Compute baseline fire times within today's window
         let baselineTimes = computeBaselineTimes(settings: settings)
+            .filter { NudgeSchedulePolicy.allows($0, settings: settings, lastClipDate: fetchLastClipDate(context: context)) }
 
         for time in baselineTimes where time > Date() {
             let prompt = PromptGenerator.prompt(
@@ -58,7 +59,7 @@ final class NudgeScheduler {
         // Schedule end-of-day recap if enabled
         if settings.enableEndOfDayRecap {
             let recapTime = DateHelpers.todayAt(minute: settings.windowEndMinute - 60)
-            if recapTime > Date() {
+            if recapTime > Date(), NudgeSchedulePolicy.allows(recapTime, settings: settings, lastClipDate: fetchLastClipDate(context: context)) {
                 await NotificationService.shared.scheduleNudge(
                     at: recapTime,
                     title: "Recap the day?",
@@ -186,6 +187,7 @@ final class NudgeScheduler {
         // Recompute and reschedule remaining baseline nudges for today
         let now = Date()
         let baselineTimes = computeBaselineTimes(settings: settings)
+            .filter { NudgeSchedulePolicy.allows($0, settings: settings, lastClipDate: fetchLastClipDate(context: context)) }
             .filter { $0 > now.addingTimeInterval(60 * 60) } // gap after this clip
 
         let lastClipDate = Date()
@@ -237,9 +239,15 @@ final class NudgeScheduler {
     }
 
     func skipNextHour() async {
-        let until = Date().addingTimeInterval(60 * 60)
-        await NotificationService.shared.cancelNudges(after: Date())
-        // Re-schedule from the "until" time onward next time scheduler runs
+        let now = Date()
+        let until = now.addingTimeInterval(60 * 60)
+        let context = SharedModelContainer.backgroundContext()
+        guard let settings = fetchOrCreateSettings(context: context) else { return }
+        // Persist the pause so a relaunch/context event cannot undo it.
+        settings.cooldownUntil = max(settings.cooldownUntil ?? until, until)
+        try? context.save()
+        await NotificationService.shared.cancelNudges(after: now, before: settings.cooldownUntil)
+        await updateSharedDefaults(context: context, settings: settings)
         Logger.scheduler.info("Skipping nudges for 1 hour (until \(String(describing: until), privacy: .public))")
     }
 
@@ -397,3 +405,4 @@ final class NudgeScheduler {
         return snapshot
     }
 }
+
