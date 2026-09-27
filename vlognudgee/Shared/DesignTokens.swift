@@ -91,3 +91,102 @@ extension View {
         modifier(VNCardModifier(padding: padding, cornerRadius: cornerRadius))
     }
 }
+
+// MARK: - Hero surfaces & motion
+
+enum VNGradient {
+    /// Deep teal wash used behind hero cards and primary CTAs.
+    static let hero = LinearGradient(
+        colors: [VNColor.balticBlue, VNColor.shadowGrey],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    /// Warm terracotta accent for the record button.
+    static let record = LinearGradient(
+        colors: [VNColor.brightGold, VNColor.flagRed],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+}
+
+/// Springy press feedback for large tappable surfaces.
+struct VNPressableStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .brightness(configuration.isPressed ? -0.04 : 0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+}
+
+extension ButtonStyle where Self == VNPressableStyle {
+    static var vnPressable: VNPressableStyle { VNPressableStyle() }
+}
+
+/// Gradient-filled hero card with white foreground.
+struct VNHeroCardModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(VNSpacing.xxl)
+            .foregroundStyle(.white)
+            .background(VNGradient.hero, in: RoundedRectangle(cornerRadius: VNRadius.xl))
+            .overlay(alignment: .topTrailing) {
+                Circle()
+                    .fill(VNColor.brightGold.opacity(0.35))
+                    .frame(width: 140, height: 140)
+                    .blur(radius: 40)
+                    .offset(x: 30, y: -40)
+                    .allowsHitTesting(false)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: VNRadius.xl))
+            .shadow(color: VNColor.shadowGrey.opacity(0.25), radius: 18, y: 10)
+    }
+}
+
+extension View {
+    func vnHeroCard() -> some View {
+        modifier(VNHeroCardModifier())
+    }
+}
+
+/// Soft breathing ring used behind the record button.
+struct VNPulse: View {
+    var color: Color
+    @State private var animate = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: VNRadius.lg)
+            .stroke(color.opacity(animate ? 0 : 0.5), lineWidth: 2)
+            .scaleEffect(animate ? 1.08 : 1)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(.easeOut(duration: 1.6).repeatForever(autoreverses: false)) {
+                    animate = true
+                }
+            }
+            .allowsHitTesting(false)
+    }
+}
+
+/// Circular progress ring with a gradient stroke.
+struct VNProgressRing: View {
+    var progress: Double
+    var lineWidth: CGFloat = 10
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(.white.opacity(0.18), lineWidth: lineWidth)
+            Circle()
+                .trim(from: 0, to: min(max(progress, 0), 1))
+                .stroke(
+                    AngularGradient(colors: [VNColor.brightGold, .white, VNColor.brightGold], center: .center),
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+                .animation(.spring(response: 0.6, dampingFraction: 0.8), value: progress)
+        }
+    }
+}

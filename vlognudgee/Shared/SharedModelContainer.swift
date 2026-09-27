@@ -23,15 +23,25 @@ enum SharedModelContainer {
             VlogAlbum.self
         ])
 
-        let groupContainerURL = FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupID)!
-            .appendingPathComponent("VlogNudge.sqlite")
-
-        let config = ModelConfiguration(
-            schema: schema,
-            url: groupContainerURL,
-            cloudKitDatabase: .private(AppConstants.cloudKitContainerID)
-        )
+        let config: ModelConfiguration
+        if let groupURL = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupID) {
+            config = ModelConfiguration(
+                schema: schema,
+                url: groupURL.appendingPathComponent("VlogNudge.sqlite"),
+                cloudKitDatabase: .private(AppConstants.cloudKitContainerID)
+            )
+        } else {
+            // Unsigned builds (CI simulator runs) have no app group or iCloud entitlement.
+            Logger.persistence.error("App group container unavailable; using a local, non-synced store.")
+            try? FileManager.default.createDirectory(at: .applicationSupportDirectory,
+                                                     withIntermediateDirectories: true)
+            config = ModelConfiguration(
+                schema: schema,
+                url: URL.applicationSupportDirectory.appendingPathComponent("VlogNudge.sqlite"),
+                cloudKitDatabase: .none
+            )
+        }
 
         do {
             return try ModelContainer(for: schema, configurations: [config])
