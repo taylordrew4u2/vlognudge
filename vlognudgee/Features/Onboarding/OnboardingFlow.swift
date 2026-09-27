@@ -12,6 +12,7 @@ import CoreMotion
 import CoreLocation
 import EventKit
 import HealthKit
+import Intents
 
 struct OnboardingFlow: View {
     @Environment(\.modelContext) private var modelContext
@@ -19,64 +20,110 @@ struct OnboardingFlow: View {
     @AppStorage("hasCompletedOnboarding", store: UserDefaults(suiteName: AppConstants.appGroupID))
     private var hasCompletedOnboarding: Bool = false
 
-    private let steps = 12
+    private let steps = 13
+    private let widgetStep = 11
 
     var body: some View {
         VStack {
-            ProgressView(value: Double(step + 1), total: Double(steps))
+            stepDots
                 .padding()
 
-            Group {
-                switch step {
-                case 0:  valueProp
-                case 1:  windowStep
-                case 2:  frequencyStep
-                case 3:  permissionStep(title: "Camera + Mic",
-                                        body: "So you can film clips right in the app.",
-                                        icon: "video.circle.fill",
-                                        action: requestCameraAndMic,
-                                        required: true)
-                case 4:  permissionStep(title: "Photos",
-                                        body: "Clips save to Photos. Full access also lets us organize them into a Daily Vlogs album; limited access keeps collections inside VlogNudge.",
-                                        icon: "photo.on.rectangle",
-                                        action: requestPhotos,
-                                        required: true)
-                case 5:  permissionStep(title: "Notifications",
-                                        body: "How nudges reach you. You control frequency.",
-                                        icon: "bell.fill",
-                                        action: requestNotifications,
-                                        required: true)
-                case 6:  permissionStep(title: "Motion",
-                                        body: "So we don't nudge while you're driving, and we know when you've just arrived somewhere.",
-                                        icon: "figure.walk",
-                                        action: requestMotion,
-                                        required: false)
-                case 7:  permissionStep(title: "Location",
-                                        body: "For geofence nudges like 'just got home' or 'arrived at Secret Pour'.",
-                                        icon: "location.fill",
-                                        action: requestLocation,
-                                        required: false)
-                case 8:  permissionStep(title: "Calendar",
-                                        body: "We'll skip nudges during your events and film after they end.",
-                                        icon: "calendar",
-                                        action: requestCalendar,
-                                        required: false)
-                case 9:  permissionStep(title: "Health",
-                                        body: "Post-workout is a great nudge moment.",
-                                        icon: "heart.fill",
-                                        action: requestHealth,
-                                        required: false)
-                case 10: addWidgetStep
-                default: landingPage
+            ZStack {
+                Group {
+                    switch step {
+                    case 0:  valueProp
+                    case 1:  windowStep
+                    case 2:  frequencyStep
+                    case 3:  permissionStep(title: "Camera + Mic",
+                                            body: "So you can film clips right in the app.",
+                                            icon: "video.circle.fill",
+                                            action: requestCameraAndMic,
+                                            required: true)
+                    case 4:  permissionStep(title: "Photos",
+                                            body: "Clips save to Photos. Full access also lets us organize them into a Daily Vlogs album; limited access keeps collections inside VlogNudge.",
+                                            icon: "photo.on.rectangle",
+                                            action: requestPhotos,
+                                            required: true)
+                    case 5:  permissionStep(title: "Notifications",
+                                            body: "How nudges reach you. You control frequency.",
+                                            icon: "bell.fill",
+                                            action: requestNotifications,
+                                            required: true)
+                    case 6:  permissionStep(title: "Motion",
+                                            body: "So we don't nudge while you're driving, and we know when you've just arrived somewhere.",
+                                            icon: "figure.walk",
+                                            action: requestMotion,
+                                            required: false)
+                    case 7:  permissionStep(title: "Location",
+                                            body: "For geofence nudges like 'just got home' or 'arrived at Secret Pour'.",
+                                            icon: "location.fill",
+                                            action: requestLocation,
+                                            required: false)
+                    case 8:  permissionStep(title: "Calendar",
+                                            body: "We'll skip nudges during your events and film after they end.",
+                                            icon: "calendar",
+                                            action: requestCalendar,
+                                            required: false)
+                    case 9:  permissionStep(title: "Health",
+                                            body: "Post-workout is a great nudge moment.",
+                                            icon: "heart.fill",
+                                            action: requestHealth,
+                                            required: false)
+                    case 10: permissionStep(title: "Focus",
+                                            body: "So nudges stay quiet during Sleep, Do Not Disturb, and your other Focus modes.",
+                                            icon: "moon.fill",
+                                            action: requestFocus,
+                                            required: false)
+                    case 11: addWidgetStep
+                    default: landingPage
+                    }
                 }
+                .id(step)
+                .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
+                                        removal: .move(edge: .leading).combined(with: .opacity)))
             }
             .frame(maxHeight: .infinity)
+            .animation(.spring(response: 0.45, dampingFraction: 0.85), value: step)
 
             bottomButtons
                 .padding()
         }
         .background(VNColor.dominant)
         .tint(VNColor.accent)
+    }
+
+    // MARK: - Chrome
+
+    private var stepDots: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<steps, id: \.self) { index in
+                Capsule()
+                    .fill(index <= step ? VNColor.accent : VNColor.border)
+                    .frame(width: index == step ? 22 : 7, height: 7)
+            }
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: step)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Step \(step + 1) of \(steps)")
+    }
+
+    private func iconBadge(_ systemName: String) -> some View {
+        ZStack {
+            Circle()
+                .fill(VNGradient.hero)
+                .frame(width: 128, height: 128)
+                .shadow(color: VNColor.balticBlue.opacity(0.35), radius: 20, y: 10)
+            Circle()
+                .fill(VNColor.brightGold.opacity(0.45))
+                .frame(width: 60, height: 60)
+                .blur(radius: 18)
+                .offset(x: 34, y: -34)
+            Image(systemName: systemName)
+                .font(.system(size: 52, weight: .semibold))
+                .foregroundStyle(.white)
+                .symbolEffect(.bounce, value: step)
+        }
+        .clipShape(Circle())
     }
 
     // MARK: - Steps
@@ -155,9 +202,7 @@ struct OnboardingFlow: View {
                                 action: @escaping () async -> Void,
                                 required: Bool) -> some View {
         VStack(spacing: 24) {
-            Image(systemName: icon)
-                .font(.system(size: 64))
-                .foregroundStyle(VNColor.accent)
+            iconBadge(icon)
             Text(title)
                 .font(VNFont.largeTitle)
             Text(body)
@@ -174,11 +219,12 @@ struct OnboardingFlow: View {
             } label: {
                 Text("Allow")
                     .font(.headline)
-                    .foregroundStyle(VNColor.onAccent)
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(VNColor.accent, in: RoundedRectangle(cornerRadius: 12))
+                    .background(VNGradient.hero, in: RoundedRectangle(cornerRadius: VNRadius.md))
             }
+            .buttonStyle(.vnPressable)
 
             if !required {
                 Button("Skip for now") {
@@ -192,9 +238,7 @@ struct OnboardingFlow: View {
 
     private var addWidgetStep: some View {
         VStack(spacing: 24) {
-            Image(systemName: "square.grid.2x2.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(VNColor.accent)
+            iconBadge("square.grid.2x2.fill")
             Text("Add a Lock Screen widget")
                 .font(VNFont.largeTitle)
             Text("The widget shows your next nudge and today's progress. It's a big part of how the app works.")
@@ -214,9 +258,7 @@ struct OnboardingFlow: View {
         VStack(spacing: 28) {
             Spacer()
 
-            Image(systemName: "video.fill")
-                .font(.system(size: 72))
-                .foregroundStyle(VNColor.accent)
+            iconBadge("video.fill")
 
             Text("You're all set")
                 .font(VNFont.largeTitle)
@@ -237,11 +279,13 @@ struct OnboardingFlow: View {
             } label: {
                 Text("Start Vlogging")
                     .font(.headline)
-                    .foregroundStyle(VNColor.onAccent)
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(VNColor.accent, in: RoundedRectangle(cornerRadius: 14))
+                    .background(VNGradient.record, in: RoundedRectangle(cornerRadius: VNRadius.md))
+                    .shadow(color: VNColor.flagRed.opacity(0.35), radius: 14, y: 8)
             }
+            .buttonStyle(.vnPressable)
             .padding(.horizontal)
         }
         .padding()
@@ -258,7 +302,7 @@ struct OnboardingFlow: View {
             if step < 3 {
                 Button("Next") { step += 1 }
                     .buttonStyle(.borderedProminent)
-            } else if step == 10 {
+            } else if step == widgetStep {
                 Button("Continue") { step += 1 }
                     .buttonStyle(.borderedProminent)
             } else if step >= steps - 1 {
@@ -290,7 +334,7 @@ struct OnboardingFlow: View {
             manager.queryActivityStarting(from: Date().addingTimeInterval(-60),
                                           to: Date(),
                                           to: .main) { _, _ in
-                continuation.resume()
+                withExtendedLifetime(manager) { continuation.resume() }
             }
         }
     }
@@ -305,6 +349,10 @@ struct OnboardingFlow: View {
 
     private func requestHealth() async {
         await HealthService.shared.requestAuthorization()
+    }
+
+    private func requestFocus() async {
+        await FocusService.shared.requestAuthorization()
     }
 
     // MARK: - Helpers

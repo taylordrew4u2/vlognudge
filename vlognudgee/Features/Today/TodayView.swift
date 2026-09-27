@@ -18,6 +18,7 @@ struct TodayView: View {
 
     @State private var nextNudgeDate: Date?
     @State private var refreshTick = 0
+    @State private var recordTaps = 0
 
     private var settings: UserSettings {
         settingsArray.first ?? UserSettings()
@@ -45,8 +46,8 @@ struct TodayView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: VNSpacing.xxl) {
-                    nextNudgeCard
-                    progressCard
+                    greeting
+                    heroCard
                     clipsStrip
                     recordButton
                     ideaButton
@@ -58,6 +59,7 @@ struct TodayView: View {
             }
             .background(VNColor.dominant)
             .navigationTitle("Today")
+            .navigationBarTitleDisplayMode(.inline)
             .refreshable {
                 await refresh()
             }
@@ -67,64 +69,76 @@ struct TodayView: View {
         }
     }
 
-    // MARK: - Next Nudge Card
+    // MARK: - Greeting
 
-    private var nextNudgeCard: some View {
-        VStack(spacing: VNSpacing.sm) {
-            Text("Next nudge")
+    private var greeting: some View {
+        VStack(alignment: .leading, spacing: VNSpacing.xs) {
+            Text(Date(), format: .dateTime.weekday(.wide).month().day())
                 .font(VNFont.caption)
+                .textCase(.uppercase)
                 .foregroundStyle(VNColor.textTertiary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            if settings.frequency == .contextOnly {
-                Text("Whenever something happens")
-                    .font(VNFont.title2)
-                    .foregroundStyle(VNColor.textPrimary)
-            } else if let next = nextNudgeDate {
-                Text(next, style: .time)
-                    .font(VNFont.bigTime)
-                    .foregroundStyle(VNColor.accent)
-                    .contentTransition(.numericText())
-                Text(relativeText(for: next))
-                    .font(VNFont.callout)
-                    .foregroundStyle(VNColor.textSecondary)
-            } else {
-                Text("—")
-                    .font(VNFont.bigTime)
-                    .foregroundStyle(VNColor.textTertiary)
-                Text("No more nudges scheduled today")
-                    .font(VNFont.callout)
-                    .foregroundStyle(VNColor.textSecondary)
-            }
+            Text(greetingText)
+                .font(VNFont.title)
+                .foregroundStyle(VNColor.textPrimary)
         }
-        .frame(maxWidth: .infinity)
-        .vnCard()
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - Progress Card (capsule bar)
+    private var greetingText: String {
+        switch Calendar.current.component(.hour, from: Date()) {
+        case 5..<12: return "Morning. Roll camera."
+        case 12..<17: return "Afternoon check-in."
+        case 17..<22: return "Evening's still a story."
+        default: return "Night owl mode."
+        }
+    }
 
-    private var progressCard: some View {
-        VStack(alignment: .leading, spacing: VNSpacing.md) {
-            HStack {
-                Text("\(todayClips.count) of \(target) clips")
-                    .font(VNFont.headline)
-                    .foregroundStyle(VNColor.textPrimary)
-                Spacer()
-                Text("\(Int(progressFraction * 100))%")
-                    .font(VNFont.subheadline)
-                    .foregroundStyle(VNColor.accent)
-            }
+    // MARK: - Hero Card (progress ring + next nudge)
 
-            HStack(spacing: 6) {
-                ForEach(0..<target, id: \.self) { index in
-                    Capsule()
-                        .fill(index < todayClips.count ? VNColor.accent : VNColor.textTertiary.opacity(0.2))
-                        .frame(height: 8)
-                        .animation(.easeInOut(duration: 0.3).delay(Double(index) * 0.05), value: todayClips.count)
+    private var heroCard: some View {
+        HStack(spacing: VNSpacing.xl) {
+            ZStack {
+                VNProgressRing(progress: progressFraction, lineWidth: 10)
+                VStack(spacing: 0) {
+                    Text("\(todayClips.count)")
+                        .font(VNFont.heroNumber)
+                        .contentTransition(.numericText())
+                    Text("of \(target)")
+                        .font(VNFont.caption)
+                        .opacity(0.8)
                 }
             }
+            .frame(width: 104, height: 104)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("\(todayClips.count) of \(target) clips today")
+
+            VStack(alignment: .leading, spacing: VNSpacing.xs) {
+                Label("Next nudge", systemImage: "bell.badge.fill")
+                    .font(VNFont.caption)
+                    .textCase(.uppercase)
+                    .opacity(0.8)
+
+                if settings.frequency == .contextOnly {
+                    Text("When the moment's right")
+                        .font(VNFont.title3)
+                } else if let next = nextNudgeDate {
+                    Text(next, style: .time)
+                        .font(VNFont.bigTime)
+                        .contentTransition(.numericText())
+                    Text(relativeText(for: next))
+                        .font(VNFont.callout)
+                        .opacity(0.85)
+                } else {
+                    Text("All done")
+                        .font(VNFont.bigTime)
+                    Text("No more nudges today")
+                        .font(VNFont.callout)
+                        .opacity(0.85)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .vnCard()
+        .vnHeroCard()
     }
 
     // MARK: - Today's Clips Strip
@@ -150,20 +164,29 @@ struct TodayView: View {
 
     private var recordButton: some View {
         Button {
+            recordTaps += 1
             appState.requestCapture(prompt: nil)
         } label: {
-            HStack(spacing: VNSpacing.sm) {
-                Image(systemName: "video.circle.fill")
-                    .font(.title2)
+            HStack(spacing: VNSpacing.md) {
+                Circle()
+                    .fill(.white)
+                    .frame(width: 14, height: 14)
+                    .overlay(Circle().stroke(.white.opacity(0.4), lineWidth: 6).scaleEffect(1.6))
                 Text("Record now")
                     .font(VNFont.title3)
+                Spacer()
+                Image(systemName: "arrow.right")
+                    .font(.headline)
             }
-            .foregroundStyle(VNColor.onAccent)
-            .frame(maxWidth: .infinity)
+            .foregroundStyle(.white)
+            .padding(.horizontal, VNSpacing.xxl)
             .padding(.vertical, VNSpacing.xl)
-            .background(VNColor.accent, in: RoundedRectangle(cornerRadius: VNRadius.lg))
+            .background(VNGradient.record, in: RoundedRectangle(cornerRadius: VNRadius.lg))
+            .background(VNPulse(color: VNColor.flagRed))
+            .shadow(color: VNColor.flagRed.opacity(0.35), radius: 14, y: 8)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.vnPressable)
+        .sensoryFeedback(.impact(weight: .medium), trigger: recordTaps)
         .accessibilityLabel("Record a clip now")
     }
 
@@ -175,16 +198,19 @@ struct TodayView: View {
         } label: {
             HStack(spacing: VNSpacing.sm) {
                 Image(systemName: "lightbulb.fill")
-                    .foregroundStyle(VNColor.accent)
+                    .foregroundStyle(VNColor.highlight)
                 Text("Add a video idea")
                     .font(VNFont.subheadline)
                     .foregroundStyle(VNColor.textPrimary)
+                Spacer()
+                Image(systemName: "plus")
+                    .foregroundStyle(VNColor.textTertiary)
             }
-            .frame(maxWidth: .infinity)
+            .padding(.horizontal, VNSpacing.lg)
             .padding(.vertical, VNSpacing.lg)
-            .background(VNColor.secondary, in: RoundedRectangle(cornerRadius: VNRadius.md))
+            .vnCard(padding: 0, cornerRadius: VNRadius.md)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.vnPressable)
     }
 
     // MARK: - Last Clip Footer

@@ -12,6 +12,10 @@ import AVFoundation
 import Photos
 import UIKit
 import CoreLocation
+import CoreMotion
+import EventKit
+import HealthKit
+import Intents
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -560,58 +564,306 @@ struct BackgroundLocationSettingsView: View {
 // MARK: - Permissions Status (themed)
 
 struct PermissionsStatusView: View {
-    @State private var notificationGranted = false
-    @State private var cameraGranted = false
-    @State private var micGranted = false
-    @State private var photosStatus = "Unknown"
+    enum Status {
+        case granted, limited, denied, notAsked, unavailable, managedElsewhere
+
+        var label: String {
+            switch self {
+            case .granted: return "On"
+            case .limited: return "Limited"
+            case .denied: return "Off"
+            case .notAsked: return "Tap to allow"
+            case .unavailable: return "Unavailable"
+            case .managedElsewhere: return "In Health app"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .granted: return "checkmark.circle.fill"
+            case .limited: return "circle.lefthalf.filled"
+            case .denied: return "xmark.circle.fill"
+            case .notAsked: return "plus.circle.fill"
+            case .unavailable: return "minus.circle"
+            case .managedElsewhere: return "arrow.up.right.circle"
+            }
+        }
+
+        var color: Color {
+            switch self {
+            case .granted: return VNColor.success
+            case .limited: return VNColor.warning
+            case .denied: return VNColor.destructive
+            case .notAsked: return VNColor.accent
+            case .unavailable, .managedElsewhere: return VNColor.textTertiary
+            }
+        }
+    }
+
+    enum Kind: String, CaseIterable, Identifiable {
+        case notifications, camera, microphone, photos, motion, location, calendar, health, focus
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .notifications: return "Notifications"
+            case .camera: return "Camera"
+            case .microphone: return "Microphone"
+            case .photos: return "Photos"
+            case .motion: return "Motion & Fitness"
+            case .location: return "Location"
+            case .calendar: return "Calendar"
+            case .health: return "Health"
+            case .focus: return "Focus"
+            }
+        }
+
+        var why: String {
+            switch self {
+            case .notifications: return "How nudges reach you"
+            case .camera: return "Film clips in the app"
+            case .microphone: return "Record audio with clips"
+            case .photos: return "Save to your Daily Vlogs album"
+            case .motion: return "No nudges while driving"
+            case .location: return "Place Nudges when you arrive"
+            case .calendar: return "Nudge right after events end"
+            case .health: return "Post-workout nudges"
+            case .focus: return "Stay quiet during Focus"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .notifications: return "bell.fill"
+            case .camera: return "video.fill"
+            case .microphone: return "mic.fill"
+            case .photos: return "photo.on.rectangle"
+            case .motion: return "figure.walk"
+            case .location: return "location.fill"
+            case .calendar: return "calendar"
+            case .health: return "heart.fill"
+            case .focus: return "moon.fill"
+            }
+        }
+    }
+
+    @State private var statuses: [Kind: Status] = [:]
+    @Environment(\.scenePhase) private var scenePhase
+
+    private var grantedCount: Int {
+        statuses.values.filter { $0 == .granted || $0 == .limited }.count
+    }
 
     var body: some View {
         List {
-            row(name: "Notifications", granted: notificationGranted)
-            row(name: "Camera", granted: cameraGranted)
-            row(name: "Microphone", granted: micGranted)
-            HStack {
-                Text("Photos")
-                Spacer()
-                Text(photosStatus).foregroundStyle(VNColor.textSecondary)
-            }
-            Button("Open iOS Settings") {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
+            Section {
+                VStack(alignment: .leading, spacing: VNSpacing.sm) {
+                    Text("\(grantedCount) of \(Kind.allCases.count) on")
+                        .font(VNFont.title2)
+                    Text("Everything stays on your device. Turn on more for smarter nudges.")
+                        .font(VNFont.callout)
+                        .opacity(0.85)
+                    Button("Allow everything not yet asked") {
+                        Task { await requestAllNotAsked() }
+                    }
+                    .font(VNFont.subheadline)
+                    .padding(.top, VNSpacing.xs)
+                    .tint(.white)
+                    .buttonStyle(.bordered)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .vnHeroCard()
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
             }
-            .foregroundStyle(VNColor.accent)
+
+            Section {
+                ForEach(Kind.allCases) { kind in
+                    row(kind)
+                }
+            } footer: {
+                Text("Tap a row to allow it, or to change it in iOS Settings. Health access is managed in the Health app.")
+            }
+
+            Section {
+                Button("Open iOS Settings") { openSettings() }
+                    .foregroundStyle(VNColor.accent)
+            }
         }
         .scrollContentBackground(.hidden)
         .background(VNColor.dominant)
         .navigationTitle("Permissions")
-        .task {
+        .task { await refresh() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await refresh() } }
+        }
+    }
+
+    private func row(_ kind: Kind) -> some View {
+        let status = statuses[kind] ?? .notAsked
+        return Button {
+            Task { await handleTap(kind, status: status) }
+        } label: {
+            HStack(spacing: VNSpacing.md) {
+                Image(systemName: kind.icon)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 32, height: 32)
+                    .background(VNGradient.hero, in: RoundedRectangle(cornerRadius: VNRadius.sm))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(kind.title)
+                        .foregroundStyle(VNColor.textPrimary)
+                    Text(kind.why)
+                        .font(VNFont.caption)
+                        .foregroundStyle(VNColor.textSecondary)
+                }
+                Spacer()
+                Label(status.label, systemImage: status.icon)
+                    .labelStyle(.titleAndIcon)
+                    .font(VNFont.caption)
+                    .foregroundStyle(status.color)
+            }
+        }
+        .disabled(status == .unavailable)
+        .accessibilityLabel("\(kind.title), \(status.label)")
+    }
+
+    // MARK: - Requests
+
+    private func handleTap(_ kind: Kind, status: Status) async {
+        switch status {
+        case .notAsked:
+            await request(kind)
+        case .denied, .limited, .managedElsewhere:
+            if kind == .health, let url = URL(string: "x-apple-health://") {
+                _ = await UIApplication.shared.open(url)
+            } else {
+                openSettings()
+            }
+        case .granted:
+            openSettings()
+        case .unavailable:
+            break
+        }
+        await refresh()
+    }
+
+    private func requestAllNotAsked() async {
+        for kind in Kind.allCases where statuses[kind] == .notAsked {
+            await request(kind)
             await refresh()
         }
     }
 
-    private func row(name: String, granted: Bool) -> some View {
-        HStack {
-            Text(name)
-            Spacer()
-            Image(systemName: granted ? "checkmark.circle.fill" : "xmark.circle")
-                .foregroundStyle(granted ? VNColor.success : VNColor.destructive)
+    private func request(_ kind: Kind) async {
+        switch kind {
+        case .notifications:
+            _ = await NotificationService.shared.requestAuthorization()
+        case .camera:
+            _ = await AVCaptureDevice.requestAccess(for: .video)
+        case .microphone:
+            _ = await AVCaptureDevice.requestAccess(for: .audio)
+        case .photos:
+            _ = await PhotosService.requestAuthorization()
+        case .motion:
+            guard CMMotionActivityManager.isActivityAvailable() else { return }
+            let manager = CMMotionActivityManager()
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                manager.queryActivityStarting(from: Date().addingTimeInterval(-60),
+                                              to: Date(),
+                                              to: .main) { _, _ in
+                    withExtendedLifetime(manager) { continuation.resume() }
+                }
+            }
+        case .location:
+            LocationService.shared.requestWhenInUseAuthorization()
+            // The system prompt is async and delegate-driven; give it a moment before refreshing.
+            try? await Task.sleep(for: .seconds(1))
+        case .calendar:
+            await CalendarService.shared.requestAccess()
+        case .health:
+            await HealthService.shared.requestAuthorization()
+        case .focus:
+            await FocusService.shared.requestAuthorization()
         }
     }
 
+    private func openSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    // MARK: - Status
+
     private func refresh() async {
-        let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-        notificationGranted = (status == .authorized || status == .provisional)
-        cameraGranted = AVCaptureDevice.authorizationStatus(for: .video) == .authorized
-        micGranted = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
-        let photos = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        switch photos {
-        case .authorized: photosStatus = "Granted"
-        case .limited: photosStatus = "Limited"
-        case .denied: photosStatus = "Denied"
-        case .notDetermined: photosStatus = "Not asked"
-        default: photosStatus = "Unknown"
+        var next: [Kind: Status] = [:]
+
+        switch await UNUserNotificationCenter.current().notificationSettings().authorizationStatus {
+        case .authorized, .ephemeral: next[.notifications] = .granted
+        case .provisional: next[.notifications] = .limited
+        case .denied: next[.notifications] = .denied
+        default: next[.notifications] = .notAsked
+        }
+
+        next[.camera] = Self.avStatus(.video)
+        next[.microphone] = Self.avStatus(.audio)
+
+        switch PHPhotoLibrary.authorizationStatus(for: .readWrite) {
+        case .authorized: next[.photos] = .granted
+        case .limited: next[.photos] = .limited
+        case .denied, .restricted: next[.photos] = .denied
+        default: next[.photos] = .notAsked
+        }
+
+        if !CMMotionActivityManager.isActivityAvailable() {
+            next[.motion] = .unavailable
+        } else {
+            switch CMMotionActivityManager.authorizationStatus() {
+            case .authorized: next[.motion] = .granted
+            case .denied, .restricted: next[.motion] = .denied
+            default: next[.motion] = .notAsked
+            }
+        }
+
+        switch CLLocationManager().authorizationStatus {
+        case .authorizedAlways: next[.location] = .granted
+        case .authorizedWhenInUse: next[.location] = .limited
+        case .denied, .restricted: next[.location] = .denied
+        default: next[.location] = .notAsked
+        }
+
+        switch EKEventStore.authorizationStatus(for: .event) {
+        case .fullAccess, .authorized: next[.calendar] = .granted
+        case .writeOnly: next[.calendar] = .limited
+        case .denied, .restricted: next[.calendar] = .denied
+        default: next[.calendar] = .notAsked
+        }
+
+        // HealthKit never reveals read-permission state, only whether we've asked.
+        if !HKHealthStore.isHealthDataAvailable() {
+            next[.health] = .unavailable
+        } else {
+            let requestStatus = try? await HKHealthStore().statusForAuthorizationRequest(
+                toShare: [], read: [HKObjectType.workoutType()]
+            )
+            next[.health] = requestStatus == .unnecessary ? .managedElsewhere : .notAsked
+        }
+
+        switch INFocusStatusCenter.default.authorizationStatus {
+        case .authorized: next[.focus] = .granted
+        case .denied, .restricted: next[.focus] = .denied
+        default: next[.focus] = .notAsked
+        }
+
+        statuses = next
+    }
+
+    private static func avStatus(_ type: AVMediaType) -> Status {
+        switch AVCaptureDevice.authorizationStatus(for: type) {
+        case .authorized: return .granted
+        case .denied, .restricted: return .denied
+        default: return .notAsked
         }
     }
 }
-
