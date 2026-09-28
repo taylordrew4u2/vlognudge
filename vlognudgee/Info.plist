@@ -19,6 +19,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>VlogNudge checks nearby calendar events to avoid nudging you at the wrong time and to suggest recording after events.</string>
 	<key>NSCalendarsUsageDescription</key>
