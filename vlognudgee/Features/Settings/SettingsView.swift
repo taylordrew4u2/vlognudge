@@ -21,6 +21,8 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var settingsArray: [UserSettings]
 
+    private static let placesAnchor = "settings-places"
+
     private var settings: UserSettings {
         if let existing = settingsArray.first { return existing }
         let new = UserSettings()
@@ -31,22 +33,29 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                frequencySection
-                scheduleSection
-                customScheduleSection
-                quietHoursSection
-                contextSignalsSection
-                notificationsSection
-                captureSection
-                badDaySection
-                permissionsSection
-                aboutSection
+            ScrollViewReader { proxy in
+                Form {
+                    frequencySection
+                    scheduleSection
+                    customScheduleSection
+                    quietHoursSection
+                    contextSignalsSection
+                    notificationsSection
+                    captureSection
+                    badDaySection
+                    permissionsSection
+                    aboutSection
+                }
+                .scrollContentBackground(.hidden)
+                .background(VNColor.dominant)
+                .tint(VNColor.accent)
+                .navigationTitle("Settings")
+                .task {
+                    guard ScreenshotMode.scrollToPlaces else { return }
+                    try? await Task.sleep(for: .milliseconds(300))
+                    proxy.scrollTo(Self.placesAnchor, anchor: .top)
+                }
             }
-            .scrollContentBackground(.hidden)
-            .background(VNColor.dominant)
-            .tint(VNColor.accent)
-            .navigationTitle("Settings")
         }
     }
 
@@ -208,6 +217,7 @@ struct SettingsView: View {
                     value: Binding(get: { settings.softClipLengthCap },
                                    set: { settings.softClipLengthCap = $0; save() }),
                     in: 15...300, step: 5)
+                .id(Self.placesAnchor)
         }
         .listRowBackground(VNColor.secondary)
     }

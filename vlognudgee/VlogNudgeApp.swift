@@ -36,6 +36,11 @@ struct VlogNudgeApp: App {
                     }
                 }
                 .task {
+                    if ScreenshotMode.isActive {
+                        ScreenshotMode.seed(modelContainer.mainContext)
+                        return
+                    }
+
                     // Register categories on every launch (safe to call repeatedly)
                     NotificationService.shared.registerCategories()
 

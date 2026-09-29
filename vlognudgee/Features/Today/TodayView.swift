@@ -250,7 +250,7 @@ struct TodayView: View {
             }
             .sorted()
 
-        nextNudgeDate = vlogNudges.first
+        nextNudgeDate = ScreenshotMode.isActive ? ScreenshotMode.sampleNextNudge : vlogNudges.first
 
         let defaults = UserDefaults(suiteName: AppConstants.appGroupID)
         defaults?.set(todayClips.count, forKey: "clipsToday")

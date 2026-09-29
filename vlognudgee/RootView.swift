@@ -8,7 +8,7 @@ import SwiftUI
 struct RootView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.scenePhase) private var scenePhase
-    @State private var selectedTab: Int = 0
+    @State private var selectedTab: Int = ScreenshotMode.initialTab ?? 0
     @State private var showCapture = false
 
     @AppStorage("hasCompletedOnboarding",
@@ -54,7 +54,7 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if hasCompletedOnboarding {
+            if hasCompletedOnboarding || ScreenshotMode.isActive {
                 mainTabs
             } else {
                 OnboardingFlow()
