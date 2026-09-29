@@ -31,7 +31,7 @@ def luminance(hex):
     values=[int(hex[i:i+2],16)/255 for i in (0,2,4)]
     values=[v/12.92 if v<=.04045 else ((v+.055)/1.055)**2.4 for v in values]
     return sum(a*b for a,b in zip(values,[.2126,.7152,.0722]))
-for fg,bg in [('182F2C','F5F2EA'),('536660','F5F2EA'),('5B6B64','F5F2EA'),('FFFFFF','17665B'),('F5F2EA','101F1C'),('B7C9BF','101F1C'),('102D24','94D8BF')]:
+for fg,bg in [('171217','FFF7F9'),('66545D','FFF7F9'),('7A6670','FFF7F9'),('FFFFFF','D81B60'),('FFF7F9','120E12'),('D8C4CC','120E12'),('1A0A10','FF6FA3')]:
     a,b=sorted([luminance(fg),luminance(bg)])
     ratio=(b+.05)/(a+.05)
     assert ratio>=4.5,(fg,bg,ratio)

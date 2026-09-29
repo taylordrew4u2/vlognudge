@@ -1,4 +1,4 @@
-"""Regenerate native iOS assets from the SVG master; requires Inkscape and Pillow."""
+"""Regenerate native iOS assets from the SVG master; requires Pillow plus Inkscape or CairoSVG."""
 from pathlib import Path
 import json, subprocess, shutil
 from PIL import Image
@@ -13,17 +13,21 @@ def svg(content, box='0 0 1024 1024'):
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{box}"><title>VlogNudge — a moment, a gentle nudge</title>{content}</svg>'
 
 def render(source, dest, width, pdf=False):
+    import cairosvg
+    if shutil.which('inkscape') is None:
+        (cairosvg.svg2pdf if pdf else cairosvg.svg2png)(url=str(source), write_to=str(dest), **({} if pdf else {'output_width':width}))
+        return
     args=['inkscape', str(source), '--export-filename='+str(dest)]
     if not pdf: args += ['--export-width='+str(width)]
     subprocess.run(args,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
-(OUT/'logo-icon.svg').write_text(svg(mark('#17665B')))
-(OUT/'logo.svg').write_text(svg('<g transform="translate(0,0) scale(0.25)">'+mark('#17665B')+'</g><text x="288" y="164" font-family="Georgia, Times, serif" font-size="112" font-weight="bold" fill="#17665B">VlogNudge</text>', '0 0 980 256'))
+(OUT/'logo-icon.svg').write_text(svg(mark('#D81B60')))
+(OUT/'logo.svg').write_text(svg('<g transform="translate(0,0) scale(0.25)">'+mark('#D81B60')+'</g><text x="288" y="164" font-family="Georgia, Times, serif" font-size="112" font-weight="bold" fill="#D81B60">VlogNudge</text>', '0 0 980 256'))
 render(OUT/'logo.svg',OUT/'logo.png',1600)
 render(OUT/'logo-icon.svg',OUT/'logo-icon.png',1024)
 
 # Modern universal slots: Xcode generates device sizes from each 1024 px master.
-variants=[('light','#F5F2EA','#17665B'),('dark','#102D24','#F5F2EA'),('tinted','#171717','#EEEEEE')]
+variants=[('light','#FFF7F9','#D81B60'),('dark','#120E12','#FF6FA3'),('tinted','#171717','#EEEEEE')]
 app_images=[]
 for style,bg,fg in variants:
     filename='AppIcon.png' if style=='light' else f'AppIcon-{style}.png'
@@ -63,7 +67,7 @@ for style,_,_ in variants:
 imageset=ROOT/'vlognudgee/Assets.xcassets/VlogNudgeMark.imageset'
 imageset.mkdir(parents=True,exist_ok=True)
 images=[]
-for appearance,fg in [('light','#17665B'),('dark','#94D8BF')]:
+for appearance,fg in [('light','#D81B60'),('dark','#FF6FA3')]:
     src=OUT/f'mark-{appearance}.svg'
     src.write_text(svg(mark(fg)))
     name=f'VlogNudgeMark-{appearance}.pdf'

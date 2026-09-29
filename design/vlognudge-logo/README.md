@@ -1,6 +1,6 @@
 # VlogNudge iOS brand assets
 
-Colors: teal `#17665B` and warm cream `#F5F2EA`.
+Colors: pink `#D81B60` (dark `#FF6FA3`), porcelain `#FFF7F9` and ink `#120E12`.
 The mark combines a video frame/play symbol with an offset notification dot.
 
 ## Ready for Xcode
