@@ -1,8 +1,10 @@
 # VlogNudge
 
-![Platform](https://img.shields.io/badge/platform-iOS%2017%2B-1A1A1F?logo=apple&logoColor=white)
-![Swift](https://img.shields.io/badge/Swift-5-EF5350?logo=swift&logoColor=white)
-![License](https://img.shields.io/badge/license-Proprietary-EF5350)
+![Platform](https://img.shields.io/badge/platform-iOS%2017%2B-171217?logo=apple&logoColor=white)
+![Swift](https://img.shields.io/badge/Swift-5-D81B60?logo=swift&logoColor=white)
+![Version](https://img.shields.io/badge/version-1.0%20%284%29-FF6FA3)
+![CI](https://github.com/taylordrew4u2/vlognudge/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/license-Proprietary-D81B60)
 
 **Your day, one clip at a time.** An ADHD-aware iOS app that nudges you to film day-in-the-life vlog clips.
 
@@ -16,7 +18,7 @@ VlogNudge watches lightweight, on-device context signals (location, motion, cale
 
 <p align="center">
   <img src="docs/screenshots/today.png" width="180" alt="Today — next nudge and daily clip progress">
-  <img src="docs/screenshots/home.png" width="180" alt="Home — progress ring and albums">
+  <img src="docs/screenshots/home.png" width="180" alt="Home — record a moment, today's count and collections">
   <img src="docs/screenshots/timeline.png" width="180" alt="Timeline — calendar of captured clips">
   <img src="docs/screenshots/settings.png" width="180" alt="Settings — frequency, active window, quiet hours">
   <img src="docs/screenshots/settings-places.png" width="180" alt="Settings — capture, bad-day mute, permissions &amp; places">
@@ -115,9 +117,10 @@ More detail — full capability list, permission strings, and Xcode troubleshoot
 
 ### CI & releases
 
-- **CI** ([`ci.yml`](.github/workflows/ci.yml)) builds the app and runs the unit tests on an iOS Simulator for every push and pull request.
+- **CI** ([`ci.yml`](.github/workflows/ci.yml)) builds the app and runs the 49 unit tests on an iOS Simulator for every push and pull request.
 - **Xcode Cloud** archives `main` and uploads it to TestFlight. To upload from a Mac instead, run `fastlane beta` for TestFlight or `fastlane release` for App Store Connect (see [`fastlane/`](fastlane)).
-- **App Store readiness:** privacy manifests (`PrivacyInfo.xcprivacy`) for the app and widget, matching build numbers across targets, and `ITSAppUsesNonExemptEncryption = NO`.
+- **App Store readiness:** version **1.0 (4)** is being prepared for resubmission. The app and widget have privacy manifests (`PrivacyInfo.xcprivacy`), their build numbers match, and `ITSAppUsesNonExemptEncryption = NO` is set in build settings. The Communication Notifications entitlement, which the app doesn't use, has been removed, and the only background mode is background fetch.
+- **Submission checklist:** [`APP_STORE_SUBMISSION.md`](APP_STORE_SUBMISSION.md) has the App Review notes (including how to exercise Place Nudges) and the remaining App Store Connect steps.
 
 ### Regenerating screenshots
 
@@ -133,6 +136,7 @@ A few decisions worth calling out:
 - **Decision logic is a pure function.** Keeping `NudgeScorer` free of side effects makes the "why did/didn't it nudge?" question answerable from inputs alone.
 - **Local notifications are the source of truth**, not background execution. Background refresh is treated as best-effort top-up, not a dependency.
 - **SwiftData + CloudKit constraints are respected** — every `@Model` property has a default value (a hard requirement for the CloudKit mirror), and initialization failures preserve the existing store instead of deleting user data. A recovery screen and explicit migrations remain follow-up work.
+- **Camera-ready look.** A "social creator" palette of pink, coral, crisp white and editorial ink, with rounded bold type. It lives in [`DesignTokens.swift`](vlognudgee/Shared/DesignTokens.swift) as adaptive light/dark tokens shared by the SwiftUI views and the UIKit tab and navigation bars.
 - **No punishment-red in the UI.** Pace tops out at a warm orange — a deliberate, ADHD-friendly tone choice documented in the [widget handoff spec](widget/HANDOFF.md).
 
 ## Roadmap
