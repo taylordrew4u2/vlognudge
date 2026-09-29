@@ -24,7 +24,10 @@ enum SharedModelContainer {
         ])
 
         let config: ModelConfiguration
-        if let groupURL = FileManager.default
+        if ScreenshotMode.isActive {
+            config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true,
+                                        cloudKitDatabase: .none)
+        } else if let groupURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupID) {
             config = ModelConfiguration(
                 schema: schema,

@@ -22,6 +22,8 @@ VlogNudge watches lightweight, on-device context signals (location, motion, cale
   <img src="docs/screenshots/settings-places.png" width="180" alt="Settings — capture, bad-day mute, permissions &amp; places">
 </p>
 
+<sub>Screenshots are generated from seeded demo data. See <a href="#regenerating-screenshots">Regenerating screenshots</a>.</sub>
+
 ## Engineering highlights
 
 - **A pure, deterministic nudge engine.** [`NudgeScorer`](vlognudgee/Services/NudgeScorer.swift) is a side-effect-free function — `(context, settings, history) → decision` — that's trivial to reason about and test. Scheduling, notifications, and persistence are kept strictly separate from the decision logic.
@@ -110,6 +112,19 @@ The project uses Xcode's **file-system synchronized folders**: every file under 
 4. Build and run on device, then walk through onboarding (camera/mic/photos/notifications are required; motion/location/calendar/health are optional but make the nudges smart).
 
 More detail — full capability list, permission strings, and Xcode troubleshooting — is in [`docs/SETUP.md`](docs/SETUP.md). Common user questions (how nudges decide, privacy, custom schedule, permissions) are answered in [`docs/FAQ.md`](docs/FAQ.md).
+
+### CI & releases
+
+- **CI** ([`ci.yml`](.github/workflows/ci.yml)) builds the app and runs the unit tests on an iOS Simulator for every push and pull request.
+- **Xcode Cloud** archives `main` and uploads it to TestFlight. To upload from a Mac instead, run `fastlane beta` for TestFlight or `fastlane release` for App Store Connect (see [`fastlane/`](fastlane)).
+- **App Store readiness:** privacy manifests (`PrivacyInfo.xcprivacy`) for the app and widget, matching build numbers across targets, and `ITSAppUsesNonExemptEncryption = NO`.
+
+### Regenerating screenshots
+
+With the `-ScreenshotMode` launch argument, the app skips onboarding and background services, then loads sample clips, albums, and ideas into an in-memory store. Your real data is never touched.
+
+- **On a Mac:** `scripts/capture_screenshots.sh [simulator-udid]` builds for the Simulator, fixes the status bar at 9:41, and writes the five PNGs to [`docs/screenshots/`](docs/screenshots).
+- **In CI:** push to the `screenshots` branch, or start the **Screenshots** workflow ([`screenshots.yml`](.github/workflows/screenshots.yml)) by hand. It runs the same script on a macOS runner and commits any changed images back to the branch. Merge that branch to update the README.
 
 ## Design notes
 
