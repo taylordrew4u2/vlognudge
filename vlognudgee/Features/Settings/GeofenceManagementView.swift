@@ -78,7 +78,7 @@ struct GeofenceRow: View {
                 if fence.nudgeOnEntry {
                     Label("Entry", systemImage: "arrow.down.to.line")
                         .font(.caption2)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(VNColor.secondaryAccent)
                 }
                 if fence.nudgeOnExit {
                     Label("Exit", systemImage: "arrow.up.forward")

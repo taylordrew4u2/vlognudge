@@ -27,8 +27,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        // Default off: background updates are enabled only after the user turns on Place Nudges.
-        manager.allowsBackgroundLocationUpdates = false
         manager.pausesLocationUpdatesAutomatically = true
         authorizationStatus = manager.authorizationStatus
         isBackgroundLocationEnabled = Self.savedBackgroundLocationEnabled
@@ -76,7 +74,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
             stop()
             return
         }
-        manager.allowsBackgroundLocationUpdates = true
         manager.startMonitoringSignificantLocationChanges()
         isBackgroundLocationActive = true
     }
@@ -90,7 +87,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         for region in manager.monitoredRegions {
             manager.stopMonitoring(for: region)
         }
-        manager.allowsBackgroundLocationUpdates = false
         isBackgroundLocationActive = false
     }
 

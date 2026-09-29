@@ -16,7 +16,7 @@ import SwiftUI
 
 // Widget-local palette — keep in sync with VNColor in DesignTokens.swift
 private enum WidgetColor {
-    static let accent = Color(red: 23/255, green: 102/255, blue: 91/255)  // Field Notes teal #17665B
+    static let accent = Color(red: 216/255, green: 27/255, blue: 96/255)  // Creator pink #D81B60
 }
 
 // MARK: - Helpers

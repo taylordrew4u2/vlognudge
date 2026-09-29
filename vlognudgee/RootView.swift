@@ -16,7 +16,7 @@ struct RootView: View {
     private var hasCompletedOnboarding: Bool = false
 
     init() {
-        // Theme the UIKit-backed tab bar to match adaptive Field Notes palette
+        // Theme the UIKit-backed tab bar to match the adaptive creator palette
         let tabAppearance = UITabBarAppearance()
         tabAppearance.configureWithOpaqueBackground()
         tabAppearance.backgroundColor = UIColor(VNColor.secondary)

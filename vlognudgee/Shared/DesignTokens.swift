@@ -1,8 +1,8 @@
 import SwiftUI
 import UIKit
 
-// Field Notes: warm paper, deep teal and restrained terracotta.
-// Dynamic UIColors keep native bars and SwiftUI surfaces in the same appearance.
+// Social creator: camera-ready pink, coral, crisp white and editorial ink.
+// Dynamic UIColors keep native bars and SwiftUI surfaces consistent in both appearances.
 enum VNColor {
     private static func adaptive(_ light: String, _ dark: String) -> Color {
         let day = UIColor(Color(hex: light))
@@ -10,37 +10,37 @@ enum VNColor {
         return Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? night : day })
     }
 
-    static let porcelain = Color(hex: "F5F2EA")
-    static let balticBlue = Color(hex: "17665B")
-    static let flagRed = Color(hex: "B53D38")
-    static let brightGold = Color(hex: "C96B43")
-    static let shadowGrey = Color(hex: "182F2C")
+    static let porcelain = Color(hex: "FFF7F9")
+    static let balticBlue = Color(hex: "D81B60")
+    static let flagRed = Color(hex: "FF3D6E")
+    static let brightGold = Color(hex: "FF8A4C")
+    static let shadowGrey = Color(hex: "171217")
 
-    static let dominant = adaptive("F5F2EA", "101F1C")
-    static let dominantLight = adaptive("EBEDE5", "172B26")
-    static let secondary = adaptive("FFFFFF", "1B302A")
-    static let secondaryLight = adaptive("E4EBE3", "29443B")
-    static let accent = adaptive("17665B", "94D8BF")
-    static let onAccent = adaptive("FFFFFF", "102D24")
+    static let dominant = adaptive("FFF7F9", "120E12")
+    static let dominantLight = adaptive("FFF0F4", "1B151B")
+    static let secondary = adaptive("FFFFFF", "211A21")
+    static let secondaryLight = adaptive("FFE5EC", "30242B")
+    static let accent = adaptive("D81B60", "FF6FA3")
+    static let onAccent = adaptive("FFFFFF", "1A0A10")
     static let accentDim = accent.opacity(0.10)
-    static let accentGlow = accent.opacity(0.20)
-    static let textPrimary = adaptive("182F2C", "F5F2EA")
-    static let textSecondary = adaptive("536660", "B7C9BF")
-    static let textTertiary = adaptive("5B6B64", "A0B5AA")
-    static let border = adaptive("D8DDD5", "365046")
-    static let success = accent
-    static let warning = adaptive("91501F", "F1BB80")
-    static let destructive = adaptive("B53D38", "FF9B93")
-    static let highlight = adaptive("A24E2B", "EAA37F")
-    static let secondaryAccent = accent
+    static let accentGlow = accent.opacity(0.22)
+    static let textPrimary = adaptive("171217", "FFF7F9")
+    static let textSecondary = adaptive("66545D", "D8C4CC")
+    static let textTertiary = adaptive("7A6670", "BDA7B0")
+    static let border = adaptive("F0D4DC", "49343E")
+    static let success = adaptive("16845B", "56D6A0")
+    static let warning = adaptive("A64B00", "FFB36B")
+    static let destructive = adaptive("C51F3A", "FF7A8E")
+    static let highlight = adaptive("E64A3B", "FF8A74")
+    static let secondaryAccent = adaptive("1473E6", "6CB2FF")
     static let surface = secondary
     static let surfaceElevated = secondaryLight
 }
 
 enum VNFont {
-    static let largeTitle = Font.system(.largeTitle, design: .serif).weight(.semibold)
-    static let title = Font.system(.title, design: .serif).weight(.semibold)
-    static let title2 = Font.system(.title2, design: .serif).weight(.semibold)
+    static let largeTitle = Font.system(.largeTitle, design: .rounded).weight(.bold)
+    static let title = Font.system(.title, design: .rounded).weight(.bold)
+    static let title2 = Font.system(.title2, design: .rounded).weight(.bold)
     static let title3 = Font.system(.title3).weight(.semibold)
     static let headline = Font.headline
     static let body = Font.body
@@ -95,16 +95,16 @@ extension View {
 // MARK: - Hero surfaces & motion
 
 enum VNGradient {
-    /// Deep teal wash used behind hero cards and primary CTAs.
+    /// Bold pink-to-coral wash used behind creator-focused hero cards and CTAs.
     static let hero = LinearGradient(
-        colors: [VNColor.balticBlue, VNColor.shadowGrey],
+        colors: [VNColor.balticBlue, VNColor.flagRed],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
-    /// Warm terracotta accent for the record button.
+    /// Sunset coral treatment for the primary record action.
     static let record = LinearGradient(
-        colors: [VNColor.brightGold, VNColor.flagRed],
+        colors: [VNColor.flagRed, VNColor.brightGold],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )

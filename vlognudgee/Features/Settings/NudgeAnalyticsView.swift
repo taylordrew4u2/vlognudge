@@ -107,7 +107,7 @@ struct NudgeAnalyticsView: View {
                         x: .value("Day", day.date, unit: .day),
                         y: .value("Clips", day.count)
                     )
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(VNColor.secondaryAccent)
                 }
                 .frame(height: 160)
             }
