@@ -46,14 +46,14 @@ enum ScreenshotMode {
             context.insert(album)
         }
 
-        let todayPrompts: [(hour: Int, minute: Int, prompt: String)] = [
-            (8, 12, "Morning coffee ritual"),
-            (11, 40, "You just got to the office — quick clip?"),
-            (13, 5, "What's for lunch?")
+        // Relative to now so "last clip … ago" reads sensibly whenever it runs.
+        let todayPrompts: [(minutesAgo: Int, prompt: String)] = [
+            (190, "Morning coffee ritual"),
+            (95, "You just got to the office — quick clip?"),
+            (25, "What's for lunch?")
         ]
         for item in todayPrompts {
-            let date = calendar.date(bySettingHour: item.hour, minute: item.minute,
-                                     second: 0, of: today) ?? .now
+            let date = max(today, Date().addingTimeInterval(-Double(item.minutesAgo) * 60))
             context.insert(Clip(recordedAt: date, duration: 12, photosAssetID: "",
                                 topicPrompt: item.prompt))
         }

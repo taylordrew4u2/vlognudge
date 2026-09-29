@@ -53,10 +53,16 @@ APP=$(find "$DERIVED/Build/Products" -maxdepth 2 -name "vlognudgee.app" -path "*
 xcrun simctl install "$UDID" "$APP"
 mkdir -p "$OUT"
 
+# Run the app in a time zone where it is ~1 PM so greetings and clip times
+# look like a normal day regardless of when this runs.
+OFFSET=$(( 13 - 10#$(date -u +%H) ))
+if [ "$OFFSET" -ge 0 ]; then SHOT_TZ="Etc/GMT-$OFFSET"; else SHOT_TZ="Etc/GMT+${OFFSET#-}"; fi
+echo "App time zone: $SHOT_TZ"
+
 capture() {
   local name="$1"; shift
   xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
-  xcrun simctl launch "$UDID" "$BUNDLE_ID" -ScreenshotMode "$@" >/dev/null
+  SIMCTL_CHILD_TZ="$SHOT_TZ" xcrun simctl launch "$UDID" "$BUNDLE_ID" -ScreenshotMode "$@" >/dev/null
   sleep 4
   xcrun simctl io "$UDID" screenshot --type=png "$OUT/$name.png" >/dev/null
   echo "Saved $OUT/$name.png"
